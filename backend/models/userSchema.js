@@ -4,19 +4,19 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true 
+        trim: true
     },
     email: {
         type: String,
         required: true,
         unique: true,
-        lowercase: true 
+        lowercase: true
     },
     password: {
         type: String,
         required: true,
         minlength: [8, "Password must be at least 8 characters long"],
-        select: false 
+        select: false
     },
     age: {
         type: Number,
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ["Male", "Female", "Other"], 
+        enum: ["Male", "Female", "Other"],
         trim: true
     },
     profileImage: {
@@ -34,14 +34,22 @@ const userSchema = new mongoose.Schema({
         default: ""
     },
     refreshToken: {
-        type: String,
-        required: true
+        type: String
     },
     bloodGroup: {
         type: String,
         enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
         required: true
     },
+    role: {
+        type: String,
+        enum: ['user', 'doctor'],
+        default: 'user'
+    },
+    qualifications: [{ 
+        type: String,
+        trim: true
+    }]
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

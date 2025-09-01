@@ -2,7 +2,7 @@ import multer from 'multer';
 
 const storage = multer.memoryStorage();
 
-// Multer middleware setup
+
 export const upload = multer({
     storage: storage,
     limits: {

@@ -3,9 +3,10 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import userRoutes from './Routers/userRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import doctorRoutes from './Routers/DoctorRoutes.js'; 
+import documentRoutes from './Routers/DoctorRoutes.js'; 
 import './config/cloudinary.config.js'; 
-
 
 dotenv.config();
 
@@ -34,6 +35,9 @@ mongoose.connect(process.env.MONGO_URI, {
 
 
 app.use('/api/users', userRoutes);
+app.use('/api/doctors', doctorRoutes); 
+app.use('/api/documents', documentRoutes); 
+
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
