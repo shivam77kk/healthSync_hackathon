@@ -5,9 +5,9 @@ import {
     getAllDoctors,
     getDoctorProfile,
     getDoctorDocuments
-} from '../controllers/doctor.controller.js';
-import { authenticateToken, isDoctor } from '../middlewares/auth.middleware.js';
-import { upload } from '../middlewares/multer.config.js';
+} from '../Controllers/DoctorControllers.js';
+import { authenticateToken, isDoctor } from '../middleware/authMiddleware.js';
+import { upload } from '../middleware/multer.config.js';
 
 const router = express.Router();
 

@@ -5,8 +5,8 @@ import {
     changePassword, 
     uploadProfileImage, 
     refreshAccessToken 
-} from '../controllers/user.controller.js';
-import { upload } from '../middlewares/multer.config.js';
+} from '../Controllers/userControllers.js';
+import { upload } from '../middleware/multer.config.js';
 import jwt from 'jsonwebtoken';
 import User from '../models/userSchema.js';
 

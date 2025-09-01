@@ -1,7 +1,10 @@
 import User from '../models/userSchema.js';
 import DoctorDocument from '../models/DoctorDocumentSchema.js';
+import HealthLog from '../models/HealthTrackerSchema.js';
+import Document from '../models/DocumentSchema.js'; 
 import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
+
 
 export const registerDoctor = async (req, res) => {
     try {
@@ -115,5 +118,37 @@ export const getDoctorDocuments = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: "Error retrieving documents", error: error.message });
+    }
+};
+
+export const getPatientHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const patient = await User.findById(id).select('-password -refreshToken');
+        
+        if (!patient) {
+            return res.status(404).json({ message: "Patient not found" });
+        }
+        
+        const healthLogs = await HealthLog.find({ userId: patient._id }).sort({ date: -1 });
+        const documents = await Document.find({ userId: patient._id }).sort({ createdAt: -1 });
+        
+        res.status(200).json({
+            message: "Patient history retrieved successfully",
+            patient: {
+                _id: patient._id,
+                name: patient.name,
+                email: patient.email,
+                age: patient.age,
+                gender: patient.gender,
+                bloodGroup: patient.bloodGroup
+            },
+            history: {
+                healthLogs,
+                documents
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving patient history", error: error.message });
     }
 };

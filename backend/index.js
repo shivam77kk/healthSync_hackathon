@@ -3,16 +3,21 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import userRoutes from './routes/userRoutes.js';
-import doctorRoutes from './Routers/DoctorRoutes.js'; 
-import documentRoutes from './Routers/DoctorRoutes.js'; 
+import userRoutes from './Routers/userRoutes.js';
+import doctorRoutes from './Routers/DoctorRoutes.js';
+import documentRoutes from './Routers/DocumentRouter.js';
+import appointmentRoutes from './Routers/AppointmentRoutes.js';
+import healthTrackerRoutes from './Routers/HealthTrackerRoutes.js';
+import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
+import newsRoutes from './Routers/HealthNewsRoutes.js';
+import chatbotRoutes from './Routers/ChatBotRoutes.js';
+import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
 import './config/cloudinary.config.js'; 
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 
 app.use(express.json()); 
 app.use(cors({
@@ -21,10 +26,8 @@ app.use(cors({
 })); 
 app.use(cookieParser()); 
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log('MongoDB connected successfully');
 })
@@ -33,11 +36,15 @@ mongoose.connect(process.env.MONGO_URI, {
     process.exit(1); 
 });
 
-
 app.use('/api/users', userRoutes);
-app.use('/api/doctors', doctorRoutes); 
-app.use('/api/documents', documentRoutes); 
-
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/health', healthTrackerRoutes);
+app.use('/api/reminders', medicineReminderRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/predictive-score', riskScoreRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
@@ -46,3 +53,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+

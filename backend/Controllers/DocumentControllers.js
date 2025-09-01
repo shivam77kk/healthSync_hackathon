@@ -1,4 +1,4 @@
-import Document from '../models/Document.js';
+import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
 
 
