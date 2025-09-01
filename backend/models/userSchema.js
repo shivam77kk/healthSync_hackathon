@@ -49,7 +49,12 @@ const userSchema = new mongoose.Schema({
     qualifications: [{ 
         type: String,
         trim: true
-    }]
+    }],
+    googleId: { 
+        type: String,
+        unique: true,
+        sparse: true 
+    }
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

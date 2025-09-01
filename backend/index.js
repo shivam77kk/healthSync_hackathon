@@ -12,7 +12,11 @@ import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
 import newsRoutes from './Routers/HealthNewsRoutes.js';
 import chatbotRoutes from './Routers/ChatBotRoutes.js';
 import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
+// import googleAuthRoutes from './Routers/GoogleAuthRoutes.js'; 
 import './config/cloudinary.config.js'; 
+import passport from 'passport'; 
+import session from 'express-session'; 
+import './Controllers/GoogleAuthControllers.js'; 
 
 dotenv.config();
 
@@ -26,6 +30,15 @@ app.use(cors({
 })); 
 app.use(cookieParser()); 
 
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
@@ -45,6 +58,7 @@ app.use('/api/reminders', medicineReminderRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
+// app.use('/api/auth', googleAuthRoutes); 
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
@@ -53,4 +67,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
