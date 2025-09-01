@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from '../models/userSchema.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { v2 as cloudinary } from 'cloudinary';
@@ -14,7 +14,7 @@ const generateTokens = async (userId) => {
         const refreshToken = jwt.sign(
             { id: userId },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' } 
+            { expiresIn: '7d' }
         );
 
         return { accessToken, refreshToken };
@@ -36,7 +36,6 @@ export const registerUser = async (req, res) => {
             return res.status(409).json({ message: "User with this email already exists" });
         }
 
-        
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
@@ -77,23 +76,26 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-       
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-      
         const { accessToken, refreshToken } = await generateTokens(user._id);
 
-        
+        res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
         user.refreshToken = refreshToken;
         await user.save();
 
         res.status(200).json({ 
             message: "Logged in successfully",
             accessToken,
-            refreshToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -106,11 +108,9 @@ export const loginUser = async (req, res) => {
     }
 };
 
-
 export const changePassword = async (req, res) => {
     try {
         const { newPassword } = req.body;
-     
         const userId = req.user.id; 
 
         if (!newPassword || newPassword.length < 8) {
@@ -122,13 +122,11 @@ export const changePassword = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
         user.password = hashedNewPassword;
         await user.save();
 
-       
         res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -137,7 +135,6 @@ export const changePassword = async (req, res) => {
 
 export const uploadProfileImage = async (req, res) => {
     try {
-        
         const userId = req.user.id; 
         const user = await User.findById(userId);
 
@@ -149,12 +146,10 @@ export const uploadProfileImage = async (req, res) => {
             return res.status(400).json({ message: "No image file provided" });
         }
 
-    
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_app_profile_images',
         });
 
-      
         user.profileImage = result.secure_url;
         await user.save();
 
@@ -169,37 +164,38 @@ export const uploadProfileImage = async (req, res) => {
     }
 };
 
-
 export const refreshAccessToken = async (req, res) => {
     try {
-        const { refreshToken } = req.body;
+        const refreshToken = req.cookies.jwt;
         if (!refreshToken) {
             return res.status(401).json({ message: "Refresh token is missing" });
         }
 
-        
         const user = await User.findOne({ refreshToken });
         if (!user) {
             return res.status(403).json({ message: "Invalid refresh token" });
         }
 
-        
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
             if (err || decoded.id !== user._id.toString()) {
                 return res.status(403).json({ message: "Invalid or expired refresh token" });
             }
 
-           
             const { accessToken, refreshToken: newRefreshToken } = await generateTokens(user._id);
 
-           
+            res.cookie('jwt', newRefreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+            
             user.refreshToken = newRefreshToken;
             await user.save();
 
             res.status(200).json({
                 message: "Tokens refreshed successfully",
                 accessToken,
-                refreshToken: newRefreshToken,
             });
         });
 
