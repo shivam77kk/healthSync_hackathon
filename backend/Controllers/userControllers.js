@@ -203,3 +203,31 @@ export const refreshAccessToken = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const logoutUser = async (req, res) => {
+    try {
+        
+        const refreshToken = req.cookies.jwt;
+        
+        if (!refreshToken) {
+            return res.sendStatus(204); 
+        }
+
+        const user = await User.findOne({ refreshToken });
+        if (user) {
+            user.refreshToken = '';
+            await user.save();
+        }
+
+    
+        res.clearCookie('jwt', { 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+        });
+
+        res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error during logout", error: error.message });
+    }
+};

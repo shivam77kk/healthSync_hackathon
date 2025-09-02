@@ -4,7 +4,8 @@ import {
     loginUser, 
     changePassword, 
     uploadProfileImage, 
-    refreshAccessToken 
+    refreshAccessToken,
+    logoutUser
 } from '../Controllers/userControllers.js';
 import { upload } from '../middleware/multer.config.js';
 import jwt from 'jsonwebtoken';
@@ -35,6 +36,9 @@ const authenticateToken = (req, res, next) => {
 
 
 router.post('/register', registerUser);
+
+
+router.post('/logout', logoutUser); 
 
 
 router.post('/login', loginUser);

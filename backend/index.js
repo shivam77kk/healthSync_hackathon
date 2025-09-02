@@ -18,16 +18,38 @@ import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
-dotenv.config(); 
+dotenv.config({ debug: true });
 
+// Verify environment variables
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     console.error('Error: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not defined in .env file');
+    process.exit(1);
+}
+
+if (!process.env.MONGO_URI) {
+    console.error('Error: MONGO_URI is not defined in .env file');
     process.exit(1);
 }
 
 // console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
 // console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET);
 // console.log('SESSION_SECRET:', process.env.SESSION_SECRET);
+// console.log('MONGO_URI:', process.env.MONGO_URI);
+
+
+mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 15000,
+    connectTimeoutMS: 15000,
+    socketTimeoutMS: 15000
+})
+    .then(() => {
+        console.log('MongoDB connected successfully');
+    })
+    .catch((err) => {
+        console.error('MongoDB connection error:', err);
+        process.exit(1);
+    });
+
 
 initializeGoogleStrategy();
 
@@ -50,15 +72,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log('MongoDB connected successfully');
-    })
-    .catch((err) => {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
-    });
-
 
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
@@ -73,6 +86,12 @@ app.use('/api/auth', googleAuthRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
+});
+
+
+app.use((err, req, res, next) => {
+    console.error('Global error:', err.stack);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
 app.listen(PORT, () => {
