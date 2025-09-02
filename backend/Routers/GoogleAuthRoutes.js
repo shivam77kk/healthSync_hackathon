@@ -1,15 +1,15 @@
-// import express from 'express';
-// import passport from 'passport';
-// import { googleCallbackHandler } from '../Controllers/GoogleAuthControllers.js';
+import express from 'express';
+import passport from 'passport';
+import { googleCallbackHandler } from '../Controllers/GoogleAuthControllers.js';
 
-// const router = express.Router();
+const router = express.Router();
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 
-// router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google/callback', passport.authenticate('google', {
+    failureRedirect: 'http://localhost:3000/login',
+    session: false
+}), googleCallbackHandler);
 
-// router.get('/google/callback', passport.authenticate('google', {
-//     failureRedirect: '/login', 
-//     session: false
-// }), googleCallbackHandler);
-
-// export default router;
+export default router;

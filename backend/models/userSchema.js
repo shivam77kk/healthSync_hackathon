@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -14,31 +14,37 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        minlength: [8, "Password must be at least 8 characters long"],
+        required: false, 
+        validate: {
+            validator: function (value) {
+                return value ? value.length >= 8 : true;
+            },
+            message: 'Password must be at least 8 characters long'
+        },
         select: false
     },
     age: {
         type: Number,
         required: true,
-        min: [0, "Age cannot be negative"],
-        max: [150, "Age is invalid"]
+        min: [0, 'Age cannot be negative'],
+        max: [150, 'Age is invalid']
     },
     gender: {
         type: String,
-        enum: ["Male", "Female", "Other"],
-        trim: true
+        enum: ['Male', 'Female', 'Other'],
+        trim: true,
+        default: 'Other'
     },
     profileImage: {
         type: String,
-        default: ""
+        default: ''
     },
     refreshToken: {
         type: String
     },
     bloodGroup: {
         type: String,
-        enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         required: true
     },
     role: {
@@ -46,17 +52,17 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'doctor'],
         default: 'user'
     },
-    qualifications: [{ 
+    qualifications: [{
         type: String,
         trim: true
     }],
-    googleId: { 
+    googleId: {
         type: String,
         unique: true,
-        sparse: true 
+        sparse: true
     }
 }, { timestamps: true });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 export default User;
