@@ -1,22 +1,31 @@
 import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
+import 'dotenv/config'; 
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); 
 
 export const uploadDocument = async (req, res) => {
     try {
         const { title, description } = req.body;
-        const userId = req.user.id; 
+        const userId = req.user.id;
 
         if (!req.file) {
             return res.status(400).json({ message: "No document file provided" });
         }
-        
-   
+
+        console.log('File:', req.file); 
+        console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
+
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
-            folder: 'healthcare_app_documents', 
+            folder: 'healthcare_app_documents',
         });
 
-    
         const newDocument = new Document({
             userId,
             title,
@@ -31,12 +40,12 @@ export const uploadDocument = async (req, res) => {
             message: "Document uploaded successfully",
             document: newDocument,
         });
-
     } catch (error) {
         console.error("Cloudinary upload error:", error);
         res.status(500).json({ message: "Error uploading document", error: error.message });
     }
 };
+
 
 
 export const getDocuments = async (req, res) => {
