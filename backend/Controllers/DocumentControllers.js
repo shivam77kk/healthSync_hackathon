@@ -8,7 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); 
+// console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); 
 
 export const uploadDocument = async (req, res) => {
     try {
@@ -19,8 +19,8 @@ export const uploadDocument = async (req, res) => {
             return res.status(400).json({ message: "No document file provided" });
         }
 
-        console.log('File:', req.file); 
-        console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
+        // console.log('File:', req.file); 
+        // console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
 
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_app_documents',
@@ -45,7 +45,6 @@ export const uploadDocument = async (req, res) => {
         res.status(500).json({ message: "Error uploading document", error: error.message });
     }
 };
-
 
 
 export const getDocuments = async (req, res) => {
