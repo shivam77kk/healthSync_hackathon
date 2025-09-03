@@ -6,7 +6,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const generateTokens = async (userId) => {
+const generateTokens = async (userId) => { 
     try {
         const accessToken = jwt.sign(
             { id: userId },

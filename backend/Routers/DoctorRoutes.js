@@ -27,6 +27,7 @@ router.post('/upload-document', authenticateToken, isDoctor, upload.single('doct
 router.post('/logout', authenticateToken, isDoctor, logoutDoctor);
 router.get('/patient/:id/history', authenticateToken, isDoctor, getPatientHistory);
 
+
 router.post('/prescribe', authenticateToken, isDoctor, createPrescription);
 router.get('/patient/:id/prescriptions', authenticateToken, isDoctor, getPatientPrescriptions);
 
