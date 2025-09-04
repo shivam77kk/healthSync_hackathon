@@ -147,8 +147,7 @@ export const uploadDoctorDocument = async (req, res) => {
 
 export const getAllDoctors = async (req, res) => {
     try {
-        const doctors = await User.find({ role: 'doctor' }).select('-password -refreshToken');
-
+        const doctors = await Doctor.find().select('-password -refreshToken');
         res.status(200).json({
             message: "Doctors retrieved successfully",
             doctors,
@@ -161,7 +160,7 @@ export const getAllDoctors = async (req, res) => {
 export const getDoctorProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const doctor = await User.findOne({ _id: id, role: 'doctor' }).select('-password -refreshToken');
+        const doctor = await Doctor.findById(id).select('-password -refreshToken');
 
         if (!doctor) {
             return res.status(404).json({ message: "Doctor not found" });

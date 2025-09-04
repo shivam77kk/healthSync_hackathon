@@ -20,10 +20,10 @@ router.post('/register', registerDoctor);
 router.post('/login', loginDoctor);
 router.get('/', getAllDoctors);
 router.get('/:id', getDoctorProfile);
+router.post('/upload-document', authenticateToken, isDoctor, upload.single('doctorDocument'), uploadDoctorDocument);
 router.get('/:id/documents', getDoctorDocuments);
 
 
-router.post('/upload-document', authenticateToken, isDoctor, upload.single('doctorDocument'), uploadDoctorDocument);
 router.post('/logout', authenticateToken, isDoctor, logoutDoctor);
 router.get('/patient/:id/history', authenticateToken, isDoctor, getPatientHistory);
 
