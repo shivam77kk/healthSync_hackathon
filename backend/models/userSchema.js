@@ -47,15 +47,6 @@ const userSchema = new mongoose.Schema({
         enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         required: true
     },
-    role: {
-        type: String,
-        enum: ['user', 'doctor'],
-        default: 'user'
-    },
-    qualifications: [{
-        type: String,
-        trim: true
-    }],
     googleId: {
         type: String,
         unique: true,

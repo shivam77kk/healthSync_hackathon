@@ -1,8 +1,15 @@
 import User from '../models/userSchema.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import { v2 as cloudinary } from 'cloudinary';
-import cloudinary from '../config/cloudinary.config.js';
+import { v2 as cloudinary } from 'cloudinary';
+import 'dotenv/config'; // Ensure dotenv is loaded
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 
 const generateTokens = async (userId) => {
     try {
