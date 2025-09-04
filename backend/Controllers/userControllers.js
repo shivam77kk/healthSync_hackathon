@@ -1,7 +1,8 @@
 import User from '../models/userSchema.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { v2 as cloudinary } from 'cloudinary';
+// import { v2 as cloudinary } from 'cloudinary';
+import cloudinary from '../config/cloudinary.config.js';
 
 const generateTokens = async (userId) => {
     try {
@@ -146,6 +147,12 @@ export const uploadProfileImage = async (req, res) => {
             return res.status(400).json({ message: "No image file provided" });
         }
 
+        console.log('Uploading to Cloudinary:', {
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            folder: 'healthcare_app_profile_images'
+        });
+
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_app_profile_images',
         });
@@ -159,8 +166,13 @@ export const uploadProfileImage = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Cloudinary upload error:", error);
-        res.status(500).json({ message: "Error uploading image to Cloudinary" });
+        console.error("Cloudinary upload error:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            http_code: error.http_code
+        });
+        res.status(500).json({ message: "Error uploading image to Cloudinary", error: error.message });
     }
 };
 

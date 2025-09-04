@@ -1,38 +1,39 @@
-import User from '../models/userSchema.js';
+// import User from '../models/userSchema.js';
+import Doctor from '../models/doctorSchema.js';
 import DoctorDocument from '../models/DoctorDocumentSchema.js';
 import HealthLog from '../models/HealthTrackerSchema.js';
 import Document from '../models/DocumentSchema.js'; 
 import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
 
-
 export const registerDoctor = async (req, res) => {
     try {
-        const { name, email, password, qualifications } = req.body;
+        const { name, email, password, age, experience, mode } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: "Name, email, and password are required" });
+        if (!name || !email || !password || !age || !experience || !mode) {
+            return res.status(400).json({ message: "Name, email, password, age, experience, and mode are required" });
         }
 
-        const existingDoctor = await User.findOne({ email });
+        const existingDoctor = await Doctor.findOne({ email });
         if (existingDoctor) {
             return res.status(409).json({ message: "Doctor with this email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newDoctor = new User({
+        const newDoctor = new Doctor({
             name,
             email,
             password: hashedPassword,
-            qualifications,
-            role: 'doctor', 
+            age,
+            experience,
+            mode,
         });
 
         await newDoctor.save();
 
-        res.status(201).json({ 
-            message: "Doctor registered successfully.", 
+        res.status(201).json({
+            message: "Doctor registered successfully.",
             doctor: {
                 id: newDoctor._id,
                 name: newDoctor.name,
