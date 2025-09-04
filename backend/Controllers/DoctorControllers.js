@@ -1,10 +1,31 @@
-// import User from '../models/userSchema.js';
-import Doctor from '../models/doctorSchema.js';
+import User from '../models/userSchema.js';
 import DoctorDocument from '../models/DoctorDocumentSchema.js';
 import HealthLog from '../models/HealthTrackerSchema.js';
-import Document from '../models/DocumentSchema.js'; 
+import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const generateTokens = async (userId) => { 
+    try {
+        const accessToken = jwt.sign(
+            { id: userId },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        const refreshToken = jwt.sign(
+            { id: userId },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        throw new Error("Failed to generate tokens");
+    }
+};
+
 
 export const registerDoctor = async (req, res) => {
     try {
@@ -14,14 +35,14 @@ export const registerDoctor = async (req, res) => {
             return res.status(400).json({ message: "Name, email, password, age, experience, and mode are required" });
         }
 
-        const existingDoctor = await Doctor.findOne({ email });
+        const existingDoctor = await User.findOne({ email });
         if (existingDoctor) {
             return res.status(409).json({ message: "Doctor with this email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newDoctor = new Doctor({
+        const newDoctor = new User({
             name,
             email,
             password: hashedPassword,
@@ -45,6 +66,52 @@ export const registerDoctor = async (req, res) => {
     }
 };
 
+export const loginDoctor = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        const doctor = await User.findOne({ email, role: 'doctor' }).select('+password');
+        if (!doctor) {
+            return res.status(401).json({ message: "Invalid credentials or not a doctor" });
+        }
+
+        const isMatch = await bcrypt.compare(password, doctor.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        const { accessToken, refreshToken } = await generateTokens(doctor._id);
+
+        res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        doctor.refreshToken = refreshToken;
+        await doctor.save();
+
+        res.status(200).json({
+            message: "Logged in successfully",
+            accessToken,
+            doctor: {
+                id: doctor._id,
+                name: doctor.name,
+                email: doctor.email,
+                profileImage: doctor.profileImage,
+                role: doctor.role
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const uploadDoctorDocument = async (req, res) => {
     try {
         const { title } = req.body;
@@ -53,7 +120,7 @@ export const uploadDoctorDocument = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: "No document file provided" });
         }
-        
+
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_doctor_documents',
         });
@@ -126,14 +193,14 @@ export const getPatientHistory = async (req, res) => {
     try {
         const { id } = req.params;
         const patient = await User.findById(id).select('-password -refreshToken');
-        
+
         if (!patient) {
             return res.status(404).json({ message: "Patient not found" });
         }
-        
+
         const healthLogs = await HealthLog.find({ userId: patient._id }).sort({ date: -1 });
         const documents = await Document.find({ userId: patient._id }).sort({ createdAt: -1 });
-        
+
         res.status(200).json({
             message: "Patient history retrieved successfully",
             patient: {
@@ -151,5 +218,28 @@ export const getPatientHistory = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: "Error retrieving patient history", error: error.message });
+    }
+};
+
+export const logoutDoctor = async (req, res) => {
+    try {
+        const doctorId = req.user.id;
+
+        const doctor = await User.findById(doctorId);
+        if (doctor) {
+            doctor.refreshToken = null;
+            await doctor.save();
+        }
+
+     
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict'
+        });
+
+        res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        res.status(500).json({ message: "Error logging out", error: error.message });
     }
 };
