@@ -1,10 +1,6 @@
 import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
-<<<<<<< HEAD
 import 'dotenv/config'; // Ensure dotenv is loaded
-=======
-import 'dotenv/config'; 
->>>>>>> 7167507a47d410ad22a47b4c353ee669304b6085
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,11 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-<<<<<<< HEAD
 console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); // Debug
-=======
-console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); 
->>>>>>> 7167507a47d410ad22a47b4c353ee669304b6085
 
 export const uploadDocument = async (req, res) => {
     try {
@@ -27,13 +19,10 @@ export const uploadDocument = async (req, res) => {
             return res.status(400).json({ message: "No document file provided" });
         }
 
-<<<<<<< HEAD
         console.log('File:', req.file); // Debug file input
         console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); // Debug
-=======
         console.log('File:', req.file); 
         console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
->>>>>>> 7167507a47d410ad22a47b4c353ee669304b6085
 
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_app_documents',
