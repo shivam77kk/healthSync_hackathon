@@ -1,6 +1,6 @@
 import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
-import 'dotenv/config'; // Ensure dotenv is loaded
+import 'dotenv/config'; 
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,7 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); // Debug
+console.log('Env Vars:', process.env.CLOUDINARY_API_KEY); 
 
 export const uploadDocument = async (req, res) => {
     try {
@@ -19,8 +19,8 @@ export const uploadDocument = async (req, res) => {
             return res.status(400).json({ message: "No document file provided" });
         }
 
-        console.log('File:', req.file); // Debug file input
-        console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); // Debug
+        console.log('File:', req.file); 
+        console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
         console.log('File:', req.file); 
         console.log('Cloudinary Config:', process.env.CLOUDINARY_API_KEY); 
 
@@ -47,9 +47,6 @@ export const uploadDocument = async (req, res) => {
         res.status(500).json({ message: "Error uploading document", error: error.message });
     }
 };
-
-// ... (getDocuments, deleteDocument)
-
 
 
 export const getDocuments = async (req, res) => {
