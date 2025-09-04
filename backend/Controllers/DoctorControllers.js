@@ -5,6 +5,7 @@ import Document from '../models/DocumentSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import Doctor from '../models/doctorSchema.js';
 
 const generateTokens = async (userId) => { 
     try {
@@ -35,14 +36,14 @@ export const registerDoctor = async (req, res) => {
             return res.status(400).json({ message: "Name, email, password, age, experience, and mode are required" });
         }
 
-        const existingDoctor = await User.findOne({ email });
+        const existingDoctor = await Doctor.findOne({ email });
         if (existingDoctor) {
             return res.status(409).json({ message: "Doctor with this email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newDoctor = new User({
+        const newDoctor = new Doctor({
             name,
             email,
             password: hashedPassword,
@@ -74,7 +75,7 @@ export const loginDoctor = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const doctor = await User.findOne({ email, role: 'doctor' }).select('+password');
+        const doctor = await Doctor.findOne({ email, role: 'doctor' }).select('+password');
         if (!doctor) {
             return res.status(401).json({ message: "Invalid credentials or not a doctor" });
         }

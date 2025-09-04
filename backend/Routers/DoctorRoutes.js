@@ -15,7 +15,7 @@ import { upload } from '../middleware/multer.config.js';
 
 const router = express.Router();
 
-
+    
 router.post('/register', registerDoctor);
 router.post('/login', loginDoctor);
 router.get('/', getAllDoctors);
