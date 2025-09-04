@@ -7,16 +7,23 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Doctor from '../models/doctorSchema.js';
 
+// Ensure Cloudinary is configured (add this at the top if not already in another file)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 const generateTokens = async (userId) => { 
     try {
         const accessToken = jwt.sign(
-            { id: userId },
+            { id: userId, role: 'doctor' }, // Added role
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '1h' }
         );
 
         const refreshToken = jwt.sign(
-            { id: userId },
+            { id: userId, role: 'doctor' }, // Added role
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '7d' }
         );
@@ -26,7 +33,6 @@ const generateTokens = async (userId) => {
         throw new Error("Failed to generate tokens");
     }
 };
-
 
 export const registerDoctor = async (req, res) => {
     try {
@@ -75,9 +81,9 @@ export const loginDoctor = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        const doctor = await Doctor.findOne({ email, role: 'doctor' }).select('+password');
+        const doctor = await Doctor.findOne({ email }).select('+password');
         if (!doctor) {
-            return res.status(401).json({ message: "Invalid credentials or not a doctor" });
+            return res.status(401).json({ message: "Invalid credentials" });
         }
 
         const isMatch = await bcrypt.compare(password, doctor.password);
@@ -104,8 +110,7 @@ export const loginDoctor = async (req, res) => {
                 id: doctor._id,
                 name: doctor.name,
                 email: doctor.email,
-                profileImage: doctor.profileImage,
-                role: doctor.role
+                profileImage: doctor.profileImage
             }
         });
     } catch (error) {
@@ -225,13 +230,12 @@ export const logoutDoctor = async (req, res) => {
     try {
         const doctorId = req.user.id;
 
-        const doctor = await User.findById(doctorId);
+        const doctor = await Doctor.findById(doctorId); // Changed to Doctor
         if (doctor) {
             doctor.refreshToken = null;
             await doctor.save();
         }
 
-     
         res.clearCookie('jwt', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

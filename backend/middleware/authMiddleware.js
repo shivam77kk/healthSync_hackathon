@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/userSchema.js';
-
+import Doctor from '../models/doctorSchema.js'; // Changed from User to Doctor
 
 export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -14,6 +13,7 @@ export const authenticateToken = (req, res, next) => {
         if (err) {
             return res.status(403).json({ message: "Invalid or expired token" });
         }
+        console.log('Decoded User:', user); // Debug log
         req.user = user;
         next();
     });
@@ -21,9 +21,13 @@ export const authenticateToken = (req, res, next) => {
 
 export const isDoctor = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id);
-        if (user && user.role === 'doctor') {
-            next();
+        console.log('Req User:', req.user); // Debug log
+        if (!req.user || !req.user.id) {
+            return res.status(403).json({ message: "Access denied. No user information." });
+        }
+        const doctor = await Doctor.findById(req.user.id);
+        if (doctor) {
+            next(); // Assume all Doctor documents are doctors
         } else {
             return res.status(403).json({ message: "Access denied. Not a doctor." });
         }
