@@ -1,12 +1,15 @@
 import Appointment from '../models/AppointmentSchema.js';
 import User from '../models/userSchema.js';
+import Doctor from '../models/doctorSchema.js';
 
 export const bookAppointment = async (req, res) => {
     try {
         const { doctorId, date, reason } = req.body;
         const userId = req.user.id;
+        console.log('Booking for userId:', userId, 'with doctorId:', doctorId); // Debug log
 
-        const doctor = await User.findOne({ _id: doctorId, role: 'doctor' });
+        const doctor = await Doctor.findById(doctorId);
+        console.log('Found Doctor:', doctor); // Debug log
         if (!doctor) {
             return res.status(404).json({ message: "Doctor not found" });
         }
@@ -15,7 +18,8 @@ export const bookAppointment = async (req, res) => {
             userId,
             doctorId,
             date,
-            reason
+            reason,
+            status: 'booked' // Adding status to match a typical AppointmentSchema
         });
 
         await newAppointment.save();
@@ -25,6 +29,7 @@ export const bookAppointment = async (req, res) => {
             appointment: newAppointment 
         });
     } catch (error) {
+        console.error('Error in bookAppointment:', error); // Debug log
         res.status(500).json({ message: "Error booking appointment", error: error.message });
     }
 };
