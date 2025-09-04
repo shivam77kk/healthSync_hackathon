@@ -22,7 +22,7 @@ router.get('/', getAllDoctors);
 router.get('/:id', getDoctorProfile);
 router.post('/upload-document', authenticateToken, isDoctor, upload.single('doctorDocument'), uploadDoctorDocument);
 router.get('/:id/documents', getDoctorDocuments);
-
+   
 
 router.post('/logout', authenticateToken, isDoctor, logoutDoctor);
 router.get('/patient/:id/history', authenticateToken, isDoctor, getPatientHistory);
