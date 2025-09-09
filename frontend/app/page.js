@@ -1,103 +1,189 @@
-import Image from "next/image";
+"use client"
+import { useState, useEffect } from "react"
+import RoleSelection from "./components/auth/RoleSelection"
+import AuthFlow from "./components/auth/AuthFlow"
+import Sidebar from "./components/dashboard/Sidebar"
+import Header from "./components/dashboard/Header"
+import WelcomeBanner from "./components/dashboard/WelcomeBanner"
+import CalendarWidget from "./components/dashboard/CalendarWidget"
+import HealthScoreCard from "./components/dashboard/HealthScoreCard"
+import AppointmentCard from "./components/dashboard/AppointmentCard"
+import GoalsCard from "./components/dashboard/GoalsCard"
+import AIAssistant from "./components/dashboard/AIAssistant"
+import MedicationsCard from "./components/dashboard/MedicationsCard"
+import BookAppointmentCard from "./components/dashboard/BookAppointmentCard"
 
-export default function Home() {
+const dashboardData = {
+  user: {
+    id: "user_123",
+    name: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name || "User" : "User",
+    greeting: `Have a nice ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}!`,
+    avatar: "/api/users/123/avatar",
+  },
+
+  healthScore: {
+    score: 100,
+    status: "Excellent!",
+    message: "Keep up the great work!",
+    trend: "up",
+    lastUpdated: "2024-01-15T10:30:00Z",
+  },
+
+  nextAppointment: {
+    id: "apt_456",
+    doctor: "Dr.Johnson",
+    date: "Tomorrow",
+    time: "2:00 PM",
+    type: "Cardiology Follow-up",
+    location: "Virtual",
+    isVideoCall: true,
+    meetingLink: "/appointments/456/join",
+  },
+
+  todaysGoals: [
+    {
+      id: "goal_steps",
+      type: "steps",
+      current: 6543,
+      target: 10000,
+      unit: "steps",
+      percentage: 65.43,
+    },
+    {
+      id: "goal_water",
+      type: "water",
+      current: 6,
+      target: 8,
+      unit: "glasses",
+      percentage: 75,
+    },
+  ],
+
+  aiAssistant: {
+    isListening: false,
+    isAvailable: true,
+    quickCommands: ["When is my Next Appointment?", "Show me my health score breakdown?", "Record my new symptoms"],
+  },
+
+  medications: [],
+
+  calendar: {
+    month: "December",
+    year: 2015,
+    days: [
+      { day: "SUN", date: null },
+      { day: "MON", date: null },
+      { day: "TUE", date: 1, active: true, hasEvent: false },
+      { day: "WED", date: 2, active: false, hasEvent: true },
+      { day: "THU", date: 3, active: true, hasEvent: false },
+      { day: "FRI", date: 4, active: false, hasEvent: false },
+      { day: "SAT", date: 5, active: false, hasEvent: true },
+      { day: "", date: 6, active: false, hasEvent: false },
+      { day: "", date: 7, active: true, hasEvent: false },
+      { day: "", date: 8, active: false, hasEvent: false },
+      { day: "", date: 9, active: false, hasEvent: false },
+      { day: "", date: 10, active: true, hasEvent: true },
+      { day: "", date: 11, active: false, hasEvent: false },
+      { day: "", date: 12, active: false, hasEvent: false },
+      { day: "", date: 13, active: false, hasEvent: false },
+      { day: "", date: 14, active: false, hasEvent: false },
+      { day: "", date: 15, active: false, hasEvent: false },
+      { day: "", date: 16, active: false, hasEvent: false },
+      { day: "", date: 17, active: true, hasEvent: false },
+      { day: "", date: 18, active: false, hasEvent: false },
+      { day: "", date: 19, active: false, hasEvent: false },
+      { day: "", date: 20, active: false, hasEvent: false },
+      { day: "", date: 21, active: true, hasEvent: false },
+      { day: "", date: 22, active: false, hasEvent: false },
+      { day: "", date: 23, active: false, hasEvent: false },
+      { day: "", date: 24, active: false, hasEvent: false },
+      { day: "", date: 25, active: false, hasEvent: false },
+      { day: "", date: 26, active: false, hasEvent: false },
+      { day: "", date: 27, active: false, hasEvent: false },
+      { day: "", date: 28, active: false, hasEvent: false },
+      { day: "", date: 29, active: true, hasEvent: false },
+      { day: "", date: 30, active: false, hasEvent: false },
+      { day: "", date: 31, active: false, hasEvent: false },
+    ],
+  },
+}
+
+export default function HealthSyncDashboard() {
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [currentStep, setCurrentStep] = useState("role") // "role", "auth", "dashboard"
+  const [selectedRole, setSelectedRole] = useState("")
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const authStatus = localStorage.getItem("isAuthenticated")
+    if (authStatus === "true") {
+      setIsAuthenticated(true)
+      setCurrentStep("dashboard")
+    }
+  }, [])
+
+  const handleDateSelect = (date) => {
+    if (date && typeof date === 'object' && date.toDateString) {
+      setSelectedDate(date)
+      console.log("[v0] Selected date:", date.toDateString())
+      // Here you could trigger API calls to fetch appointments for selected date
+    }
+  }
+
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role)
+    setCurrentStep("auth")
+  }
+
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true)
+    localStorage.setItem("isAuthenticated", "true")
+    localStorage.setItem("userRole", selectedRole)
+    setCurrentStep("dashboard")
+  }
+
+  const handleBackToRole = () => {
+    setCurrentStep("role")
+    setSelectedRole("")
+  }
+
+  if (currentStep === "role") {
+    return <RoleSelection onRoleSelect={handleRoleSelect} />
+  }
+
+  if (currentStep === "auth") {
+    return (
+      <AuthFlow
+        role={selectedRole}
+        onBack={handleBackToRole}
+        onAuthSuccess={handleAuthSuccess}
+      />
+    )
+  }
+
+  // Dashboard view
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <Sidebar />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="ml-64 p-6">
+        <Header />
+
+        <div className="grid grid-cols-12 gap-6">
+          <WelcomeBanner userData={dashboardData.user} />
+          <CalendarWidget
+            calendarData={dashboardData.calendar}
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+          />
+          <HealthScoreCard healthData={dashboardData.healthScore} />
+          <AppointmentCard appointmentData={dashboardData.nextAppointment} />
+          <GoalsCard goalsData={dashboardData.todaysGoals} />
+          <AIAssistant assistantData={dashboardData.aiAssistant} />
+          <MedicationsCard medicationsData={dashboardData.medications} />
+          <BookAppointmentCard />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }

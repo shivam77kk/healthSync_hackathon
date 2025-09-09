@@ -5,7 +5,8 @@ import {
     changePassword, 
     uploadProfileImage, 
     refreshAccessToken,
-    logoutUser
+    logoutUser,
+    getUserProfile
 } from '../Controllers/userControllers.js';
 import { upload } from '../middleware/multer.config.js';
 import jwt from 'jsonwebtoken';
@@ -51,5 +52,7 @@ router.post('/change-password', authenticateToken, changePassword);
 
 
 router.post('/upload-profile-image', authenticateToken, upload.single('profileImage'), uploadProfileImage);
+
+router.get('/profile', authenticateToken, getUserProfile);
 
 export default router;
