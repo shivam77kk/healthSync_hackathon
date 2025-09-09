@@ -22,23 +22,7 @@ export default function AppointmentsPage() {
       setAppointments(response.appointments || [])
     } catch (error) {
       console.error('Error fetching appointments:', error)
-      // Fallback data when API fails
-      setAppointments([
-        {
-          _id: '1',
-          doctorId: { name: 'Dr. Rajesh Kumar', qualifications: 'Cardiology' },
-          date: new Date().toISOString(),
-          status: 'booked',
-          reason: 'Bring last 3 blood test reports'
-        },
-        {
-          _id: '2',
-          doctorId: { name: 'Dr. Priya Sharma', qualifications: 'Dermatology' },
-          date: new Date().toISOString(),
-          status: 'completed',
-          reason: 'Skin consultation'
-        }
-      ])
+      setAppointments([])
     } finally {
       setLoading(false)
     }
@@ -50,9 +34,7 @@ export default function AppointmentsPage() {
       fetchAppointments()
     } catch (error) {
       console.error('Error canceling appointment:', error)
-      // Simulate cancellation when API fails
-      setAppointments(prev => prev.filter(apt => apt._id !== id))
-      alert('Appointment cancelled (simulated)')
+      alert('Failed to cancel appointment. Please try again.')
     }
   }
 

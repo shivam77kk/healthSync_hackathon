@@ -16,7 +16,7 @@ import BookAppointmentCard from "./components/dashboard/BookAppointmentCard"
 const dashboardData = {
   user: {
     id: "user_123",
-    name: typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').name || "User" : "User",
+    name: "User",
     greeting: `Have a nice ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}!`,
     avatar: "/api/users/123/avatar",
   },
@@ -113,12 +113,35 @@ export default function HealthSyncDashboard() {
   const [currentStep, setCurrentStep] = useState("role") // "role", "auth", "dashboard"
   const [selectedRole, setSelectedRole] = useState("")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [userName, setUserName] = useState("User")
 
   useEffect(() => {
     const authStatus = localStorage.getItem("isAuthenticated")
     if (authStatus === "true") {
       setIsAuthenticated(true)
       setCurrentStep("dashboard")
+    }
+    
+    // Get user name from localStorage
+    const updateUserName = () => {
+      const userData = localStorage.getItem("user")
+      if (userData) {
+        try {
+          const user = JSON.parse(userData)
+          setUserName(user.name || "User")
+        } catch (error) {
+          console.error('Error parsing user data:', error)
+        }
+      }
+    }
+    
+    updateUserName()
+    
+    // Listen for storage changes
+    window.addEventListener('storage', updateUserName)
+    
+    return () => {
+      window.removeEventListener('storage', updateUserName)
     }
   }, [])
 
@@ -140,6 +163,17 @@ export default function HealthSyncDashboard() {
     localStorage.setItem("isAuthenticated", "true")
     localStorage.setItem("userRole", selectedRole)
     setCurrentStep("dashboard")
+    
+    // Update user name immediately after auth
+    const userData = localStorage.getItem("user")
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        setUserName(user.name || "User")
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
+    }
   }
 
   const handleBackToRole = () => {
@@ -170,7 +204,7 @@ export default function HealthSyncDashboard() {
         <Header />
 
         <div className="grid grid-cols-12 gap-6">
-          <WelcomeBanner userData={dashboardData.user} />
+          <WelcomeBanner userData={{...dashboardData.user, name: userName}} />
           <CalendarWidget
             calendarData={dashboardData.calendar}
             selectedDate={selectedDate}

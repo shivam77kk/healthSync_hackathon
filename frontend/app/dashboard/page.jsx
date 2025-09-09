@@ -43,10 +43,21 @@ export default function Dashboard() {
         const userData = await response.json()
         setUser(userData)
         localStorage.setItem('user', JSON.stringify(userData))
+        localStorage.setItem('lastLoginEmail', userData.email)
+        // Clean up URL after successful auth
+        if (searchParams.get('token')) {
+          window.history.replaceState({}, document.title, '/dashboard')
+        }
       } else {
+        console.error('Failed to fetch user profile')
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('isAuthenticated')
         router.push('/login')
       }
     } catch (error) {
+      console.error('Error fetching user profile:', error)
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('isAuthenticated')
       router.push('/login')
     } finally {
       setLoading(false)
@@ -61,12 +72,12 @@ export default function Dashboard() {
       })
     } catch (error) {
       console.error('Logout error:', error)
-    } finally {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('isAuthenticated')
-      localStorage.removeItem('user')
-      router.push('/login')
     }
+    
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('user')
+    router.push('/login')
   }
 
   if (loading) {
