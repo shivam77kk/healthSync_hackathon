@@ -93,12 +93,12 @@ export const googleCallbackHandler = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        
+
         req.user.refreshToken = refreshToken;
         await req.user.save();
         console.log('Refresh token saved for user:', req.user.email);
 
-       
+
         res.redirect(`http://localhost:3000/dashboard?token=${accessToken}`);
     } catch (error) {
         console.error('Error in googleCallbackHandler:', error.message);
@@ -116,19 +116,19 @@ export const logoutHandler = async (req, res) => {
 
         console.log('Logging out user:', req.user.email);
 
-        
+
         req.user.refreshToken = '';
         await req.user.save();
         console.log('Refresh token cleared for user:', req.user.email);
 
-     
+
         req.logout((err) => {
             if (err) {
                 console.error('Error during logout:', err.message);
                 return res.status(500).json({ message: 'Error during logout', error: err.message });
             }
 
-        
+
             req.session.destroy((err) => {
                 if (err) {
                     console.error('Error destroying session:', err.message);
@@ -143,7 +143,7 @@ export const logoutHandler = async (req, res) => {
 
                 console.log('User logged out successfully');
 
-             
+
                 res.status(200).json({ message: 'Logged out successfully' });
             });
         });
