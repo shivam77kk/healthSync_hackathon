@@ -1,16 +1,6 @@
 import dotenv from 'dotenv';
 
-// Load .env file first with override and debug enabled
-dotenv.config({ override: true, debug: true });
-
-// Debug environment variables to confirm loading
-console.log('Loaded environment variables:', {
-    PORT: process.env.PORT,
-    MONGO_URI: process.env.MONGO_URI,
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    SESSION_SECRET: process.env.SESSION_SECRET
-});
+dotenv.config();
 
 // Verify critical environment variables
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -35,6 +25,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';
+import authRoutes from './Routers/authRoutes.js';
 import userRoutes from './Routers/userRoutes.js';
 import doctorRoutes from './Routers/DoctorRoutes.js';
 import documentRoutes from './Routers/DocumentRouter.js';
@@ -42,6 +33,9 @@ import appointmentRoutes from './Routers/AppointmentRoutes.js';
 import healthTrackerRoutes from './Routers/HealthTrackerRoutes.js';
 import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
 import newsRoutes from './Routers/HealthNewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
 import chatbotRoutes from './Routers/ChatBotRoutes.js';
 import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
 import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
@@ -87,6 +81,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/documents', documentRoutes);
@@ -94,9 +90,11 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/health', healthTrackerRoutes);
 app.use('/api/reminders', medicineReminderRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/news', newsApiRoutes);
+app.use('/api/news', newsApiRoutes);
+app.use('/api/news', newsApiRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
-app.use('/api/auth', googleAuthRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
 
 // Root route

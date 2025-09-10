@@ -3,9 +3,9 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import MedicalHeroSection from "../components/auth/MedicalHeroSection"
-import SignupForm from "../components/auth/SignupForm"
-import ThemeToggle from "../components/ThemeToggle"
+import MedicalHeroSection from "../../../components/auth/MedicalHeroSection"
+import SignupForm from "../../../components/auth/SignupForm"
+import ThemeToggle from "../../../components/ThemeToggle"
 
 export default function SignupPage() {
   const router = useRouter()

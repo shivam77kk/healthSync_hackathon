@@ -6,14 +6,36 @@ import Header from "@/components/dashboard/Header"
 import DoctorTabs from "@/components/doctor/DoctorTabs"
 import DoctorSearch from "@/components/doctor/DoctorSearch"
 import DoctorCard from "@/components/doctor/DoctorCard"
-import { doctorAPI, appointmentAPI } from "@/services/api"
+
 
 export default function DoctorInteractionPage() {
   const [activeTab, setActiveTab] = useState("book")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSpecialty, setSelectedSpecialty] = useState("All Specialties")
-  const [doctors, setDoctors] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [doctors, setDoctors] = useState([
+    {
+      _id: '1',
+      name: 'Dr. Rajesh Kumar',
+      qualifications: 'Cardiology',
+      experience: 15,
+      profileImage: null
+    },
+    {
+      _id: '2', 
+      name: 'Dr. Priya Sharma',
+      qualifications: 'Dermatology',
+      experience: 10,
+      profileImage: null
+    },
+    {
+      _id: '3',
+      name: 'Dr. Amit Singh',
+      qualifications: 'Orthopedics',
+      experience: 12,
+      profileImage: null
+    }
+  ])
+  const [loading, setLoading] = useState(false)
   const [appointments, setAppointments] = useState([
     {
       id: 1,
@@ -36,56 +58,49 @@ export default function DoctorInteractionPage() {
   ])
 
   useEffect(() => {
+    // Try to fetch from API but don't block UI
     fetchDoctors()
     fetchUserAppointments()
   }, [])
 
   const fetchUserAppointments = async () => {
     try {
-      const response = await appointmentAPI.getUserAppointments()
-      if (response.appointments) {
-        const formattedAppointments = response.appointments.map(apt => ({
-          id: apt._id,
-          doctorName: apt.doctorId?.name || "Doctor",
-          specialty: apt.doctorId?.qualifications || "General",
-          date: new Date(apt.date).toISOString().split('T')[0],
-          time: apt.time || "Not specified",
-          status: apt.status || "confirmed",
-          type: apt.reason || "Consultation"
-        }))
-        setAppointments(formattedAppointments)
+      const response = await fetch('http://localhost:5000/api/appointments/user', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data.appointments) {
+          const formattedAppointments = data.appointments.map(apt => ({
+            id: apt._id,
+            doctorName: apt.doctorId?.name || "Doctor",
+            specialty: apt.doctorId?.qualifications || "General",
+            date: new Date(apt.date).toISOString().split('T')[0],
+            time: apt.time || "Not specified",
+            status: apt.status || "confirmed",
+            type: apt.reason || "Consultation"
+          }))
+          setAppointments(formattedAppointments)
+        }
       }
     } catch (error) {
       console.error('Error fetching appointments:', error)
-      // Keep sample appointments if API fails
     }
   }
 
   const fetchDoctors = async () => {
     try {
-      const response = await doctorAPI.getAllDoctors()
-      setDoctors(response.doctors || [])
-    } catch (error) {
-      console.error('Error fetching doctors:', error)
-      // Fallback data when API fails
-      setDoctors([
-        {
-          _id: '1',
-          name: 'Dr. Rajesh Kumar',
-          qualifications: 'Cardiology',
-          experience: 15,
-          profileImage: null
-        },
-        {
-          _id: '2', 
-          name: 'Dr. Priya Sharma',
-          qualifications: 'Dermatology',
-          experience: 10,
-          profileImage: null
+      const response = await fetch('http://localhost:5000/api/doctors')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.doctors && data.doctors.length > 0) {
+          setDoctors(data.doctors)
         }
-      ])
-    } finally {
-      setLoading(false)
+      }
+    } catch (error) {
+      console.log('Using fallback doctor data')
     }
   }
 
@@ -114,7 +129,14 @@ export default function DoctorInteractionPage() {
         reason: reason
       }
       
-      const response = await appointmentAPI.bookAppointment(appointmentData)
+      const response = await fetch('http://localhost:5000/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(appointmentData)
+      })
       
       // Add to local appointments list
       const doctor = doctors.find(d => d._id === doctorId)
@@ -154,7 +176,14 @@ export default function DoctorInteractionPage() {
     
     if (newDate) {
       try {
-        await appointmentAPI.rescheduleAppointment(appointmentId, newDate)
+        await fetch(`http://localhost:5000/api/appointments/${appointmentId}/reschedule`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          },
+          body: JSON.stringify({ date: newDate })
+        })
       } catch (error) {
         console.error('Error rescheduling appointment:', error)
       } finally {
@@ -174,7 +203,12 @@ export default function DoctorInteractionPage() {
   const handleCancel = async (appointmentId) => {
     if (confirm("Are you sure you want to cancel this appointment?")) {
       try {
-        await appointmentAPI.cancelAppointment(appointmentId)
+        await fetch(`http://localhost:5000/api/appointments/${appointmentId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        })
       } catch (error) {
         console.error('Error cancelling appointment:', error)
       } finally {
@@ -187,7 +221,12 @@ export default function DoctorInteractionPage() {
 
   const handleAccept = async (appointmentId) => {
     try {
-      await appointmentAPI.acceptAppointment(appointmentId)
+      await fetch(`http://localhost:5000/api/appointments/${appointmentId}/accept`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      })
     } catch (error) {
       console.error('Error accepting appointment:', error)
     } finally {
@@ -205,7 +244,12 @@ export default function DoctorInteractionPage() {
   const handleReject = async (appointmentId) => {
     if (confirm("Are you sure you want to reject this appointment?")) {
       try {
-        await appointmentAPI.rejectAppointment(appointmentId)
+        await fetch(`http://localhost:5000/api/appointments/${appointmentId}/reject`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        })
       } catch (error) {
         console.error('Error rejecting appointment:', error)
       } finally {

@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Sidebar from "@/components/dashboard/Sidebar"
-import Header from "@/components/dashboard/Header"
+import Sidebar from "../../../components/dashboard/Sidebar"
+import Header from "../../../components/dashboard/Header"
 import { Search, Mic } from "lucide-react"
-import { appointmentAPI } from "@/services/api"
+import { appointmentAPI } from "../services/api"
 
 export default function AppointmentsPage() {
   const [activeTab, setActiveTab] = useState("appointments")

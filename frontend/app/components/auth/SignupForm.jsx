@@ -4,7 +4,7 @@ import { useState } from "react"
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import GoogleSignInButton from "./GoogleSignInButton"
-import { userAPI } from "@/services/api"
+import { userAPI } from "@/src/(pages)/services/api"
 
 export default function SignupForm({ role, onSuccess, onError }) {
   const [formData, setFormData] = useState({
@@ -46,22 +46,22 @@ export default function SignupForm({ role, onSuccess, onError }) {
     }
 
     try {
-      // Simulate registration for demo
-      setTimeout(() => {
-        localStorage.setItem("user", JSON.stringify({ 
-          name: formData.name, 
-          email: formData.email, 
-          role: role,
-          age: formData.age,
-          gender: formData.gender,
-          bloodGroup: formData.bloodGroup
-        }))
-        onSuccess?.()
-        setIsLoading(false)
-      }, 1000)
+      const response = await userAPI.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        age: parseInt(formData.age),
+        gender: formData.gender,
+        bloodGroup: formData.bloodGroup
+      })
+      
+      localStorage.setItem("user", JSON.stringify(response.user))
+      localStorage.setItem("isAuthenticated", "true")
+      onSuccess?.()
     } catch (err) {
-      setError("Registration failed. Please try again.")
-      onError?.("Registration failed. Please try again.")
+      setError(err.message || "Registration failed. Please try again.")
+      onError?.(err.message || "Registration failed. Please try again.")
+    } finally {
       setIsLoading(false)
     }
   }

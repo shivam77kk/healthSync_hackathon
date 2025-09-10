@@ -1,19 +1,21 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { User, Settings, LogOut, Camera } from "lucide-react"
-import { userAPI } from "@/services/api"
 
 export default function UserProfile() {
   const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const userData = localStorage.getItem('user')
-      return userData ? JSON.parse(userData) : { name: 'User', email: 'user@example.com' }
-    }
-    return { name: 'User', email: 'user@example.com' }
-  })
+  const [user, setUser] = useState({ name: 'User', email: 'user@example.com' })
+  const [mounted, setMounted] = useState(false)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    setMounted(true)
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
+  }, [])
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0]
@@ -23,9 +25,16 @@ export default function UserProfile() {
     formData.append('profileImage', file)
 
     try {
-      const response = await userAPI.uploadProfileImage(formData)
-      setUser(prev => ({ ...prev, profileImage: response.profileImage }))
-      localStorage.setItem('user', JSON.stringify({ ...user, profileImage: response.profileImage }))
+      const response = await fetch('http://localhost:5000/api/users/upload-profile-image', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      })
+      const data = await response.json()
+      setUser(prev => ({ ...prev, profileImage: data.profileImage }))
+      localStorage.setItem('user', JSON.stringify({ ...user, profileImage: data.profileImage }))
     } catch (error) {
       console.error('Error uploading image:', error)
     }
@@ -33,16 +42,16 @@ export default function UserProfile() {
 
   const handleLogout = async () => {
     try {
-      await userAPI.logout()
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
     } catch (error) {
       console.error('Error logging out:', error)
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
     }
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
   }
 
   return (
@@ -52,7 +61,7 @@ export default function UserProfile() {
         className="flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors"
       >
         <div className="w-8 h-8 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center overflow-hidden">
-          {user.profileImage ? (
+          {mounted && user.profileImage ? (
             <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <User className="w-4 h-4 text-white" />
@@ -66,7 +75,7 @@ export default function UserProfile() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-12 h-12 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center overflow-hidden">
-                  {user.profileImage ? (
+                  {mounted && user.profileImage ? (
                     <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-6 h-6 text-white" />

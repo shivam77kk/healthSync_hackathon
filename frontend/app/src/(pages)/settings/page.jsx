@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Moon, Sun, Lock, Globe, HelpCircle, Star, Share2, Shield, ChevronRight } from "lucide-react"
-import Sidebar from "@/components/dashboard/Sidebar"
-import Header from "@/components/dashboard/Header"
-import { userAPI } from "@/services/api"
+import Sidebar from "../../../components/dashboard/Sidebar"
+import Header from "../../../components/dashboard/Header"
+import { userAPI } from "../services/api"
 
 export default function SettingsPage() {
   const [darkMode, setDarkMode] = useState(false)

@@ -4,10 +4,10 @@ import { useState, useEffect } from "react"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import MedicalHeroSection from "../components/auth/MedicalHeroSection"
-import ThemeToggle from "../components/ThemeToggle"
-import GoogleSignInButton from "../components/auth/GoogleSignInButton"
-import { userAPI } from "@/services/api"
+import MedicalHeroSection from "../../../components/auth/MedicalHeroSection"
+import ThemeToggle from "../../../components/ThemeToggle"
+import GoogleSignInButton from "../../../components/auth/GoogleSignInButton"
+import { userAPI } from "../services/api"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" })
