@@ -14,6 +14,8 @@ import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
 import newsRoutes from './Routers/HealthNewsRoutes.js';
 import chatbotRoutes from './Routers/ChatBotRoutes.js';
 import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
+import aiTriageRoutes from './Routers/AiTriageRoutes.js';
+import prescriptionRoutes from './Routers/PrescriptionRoutes.js';
 import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
@@ -59,8 +61,10 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(cookieParser());
 app.use(session({
@@ -82,10 +86,17 @@ app.use('/api/reminders', medicineReminderRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
+app.use('/api/ai-triage', aiTriageRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/auth', googleAuthRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Backend connection successful!', timestamp: new Date().toISOString() });
 });
 
 
