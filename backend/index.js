@@ -1,28 +1,8 @@
 import dotenv from 'dotenv';
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import passport from 'passport';
-import userRoutes from './Routers/userRoutes.js';
-import doctorRoutes from './Routers/DoctorRoutes.js';
-import documentRoutes from './Routers/DocumentRouter.js';
-import appointmentRoutes from './Routers/AppointmentRoutes.js';
-import healthTrackerRoutes from './Routers/HealthTrackerRoutes.js';
-import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
-import newsRoutes from './Routers/HealthNewsRoutes.js';
-import chatbotRoutes from './Routers/ChatBotRoutes.js';
-import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
-import aiTriageRoutes from './Routers/AiTriageRoutes.js';
-import prescriptionRoutes from './Routers/PrescriptionRoutes.js';
-import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
-import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
-import './config/cloudinary.config.js';
 
-dotenv.config({ debug: true });
+dotenv.config();
 
-// Verify environment variables
+// Verify critical environment variables
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     console.error('Error: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not defined in .env file');
     process.exit(1);
@@ -33,12 +13,37 @@ if (!process.env.MONGO_URI) {
     process.exit(1);
 }
 
-// console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
-// console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET);
-// console.log('SESSION_SECRET:', process.env.SESSION_SECRET);
-// console.log('MONGO_URI:', process.env.MONGO_URI);
+if (!process.env.SESSION_SECRET) {
+    console.error('Error: SESSION_SECRET is not defined in .env file');
+    process.exit(1);
+}
 
+// Import dependencies after dotenv configuration
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import passport from 'passport';
+import authRoutes from './Routers/authRoutes.js';
+import userRoutes from './Routers/userRoutes.js';
+import doctorRoutes from './Routers/DoctorRoutes.js';
+import documentRoutes from './Routers/DocumentRouter.js';
+import appointmentRoutes from './Routers/AppointmentRoutes.js';
+import healthTrackerRoutes from './Routers/HealthTrackerRoutes.js';
+import medicineReminderRoutes from './Routers/MedicineReminderRoutes.js';
+import newsRoutes from './Routers/HealthNewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
+import newsApiRoutes from './Routers/NewsRoutes.js';
+import chatbotRoutes from './Routers/ChatBotRoutes.js';
+import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
+import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
+import voicePrescriptionRoutes from './Routers/VoicePrescriptionRoutes.js';
+import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
+import './config/cloudinary.config.js';
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 15000,
     connectTimeoutMS: 15000,
@@ -48,23 +53,22 @@ mongoose.connect(process.env.MONGO_URI, {
         console.log('MongoDB connected successfully');
     })
     .catch((err) => {
-        console.error('MongoDB connection error:', err);
+        console.error('MongoDB connection error:', err.message);
         process.exit(1);
     });
 
-
+// Initialize Google OAuth strategy
 initializeGoogleStrategy();
 
+// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-
+// Middleware
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: 'http://localhost:3000',
+    credentials: true
 }));
 app.use(cookieParser());
 app.use(session({
@@ -76,7 +80,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/documents', documentRoutes);
@@ -84,27 +90,25 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/health', healthTrackerRoutes);
 app.use('/api/reminders', medicineReminderRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/news', newsApiRoutes);
+app.use('/api/news', newsApiRoutes);
+app.use('/api/news', newsApiRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
-app.use('/api/ai-triage', aiTriageRoutes);
-app.use('/api/prescriptions', prescriptionRoutes);
-app.use('/api/auth', googleAuthRoutes);
+app.use('/api/voice-prescription', voicePrescriptionRoutes);
 
+// Root route
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
 });
 
-// Test endpoint
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'Backend connection successful!', timestamp: new Date().toISOString() });
-});
-
-
+// Global error handler
 app.use((err, req, res, next) => {
     console.error('Global error:', err.stack);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
+// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

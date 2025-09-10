@@ -170,3 +170,32 @@ export const rescheduleAppointment = async (req, res) => {
         res.status(500).json({ message: "Error rescheduling appointment", error: error.message });
     }
 };
+
+export const userRescheduleAppointment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { newDate } = req.body;
+        const userId = req.user.id;
+
+        if (!newDate) {
+            return res.status(400).json({ message: "New date is required" });
+        }
+
+        const appointment = await Appointment.findOneAndUpdate(
+            { _id: id, userId, status: { $in: ['booked', 'accepted'] } },
+            { $set: { date: newDate, status: 'rescheduled' } },
+            { new: true }
+        );
+
+        if (!appointment) {
+            return res.status(404).json({ message: "Appointment not found or cannot be rescheduled" });
+        }
+
+        res.status(200).json({
+            message: "Appointment rescheduled successfully",
+            appointment
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error rescheduling appointment", error: error.message });
+    }
+};

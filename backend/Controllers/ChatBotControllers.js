@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+
 
 export const getChatbotResponse = async (req, res) => {
     try {
@@ -7,26 +7,43 @@ export const getChatbotResponse = async (req, res) => {
             return res.status(400).json({ message: "Message is required" });
         }
 
-        const aiApiResponse = await fetch('https://api.example.com/ai/generate', {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.AI_API_KEY}`
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
             },
-            body: JSON.stringify({ prompt: `Provide a helpful response to this health-related question: ${message}` })
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are a helpful health assistant. Provide accurate, helpful health information but always recommend consulting healthcare professionals for serious concerns."
+                    },
+                    {
+                        role: "user",
+                        content: message
+                    }
+                ],
+                max_tokens: 150,
+                temperature: 0.7
+            })
         });
 
-        if (!aiApiResponse.ok) {
-            throw new Error(`AI API error: ${aiApiResponse.statusText}`);
+        if (!response.ok) {
+            throw new Error(`OpenAI API error: ${response.statusText}`);
         }
 
-        const data = await aiApiResponse.json();
+        const data = await response.json();
         res.status(200).json({
             message: "Response generated successfully",
-            response: data.text 
+            response: data.choices[0].message.content
         });
     } catch (error) {
         console.error("Chatbot error:", error);
-        res.status(500).json({ message: "Failed to get chatbot response", error: error.message });
+        res.status(500).json({ 
+            message: "I'm here to help with your health questions!",
+            response: "I'm here to help with your health questions! Ask me about symptoms, medications, diet, exercise, sleep, or stress management."
+        });
     }
 };

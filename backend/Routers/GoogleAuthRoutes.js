@@ -9,8 +9,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // Google callback route
 router.get('/google/callback', passport.authenticate('google', {
-    failureRedirect: 'http://localhost:3000/login',
-    session: false
+    failureRedirect: 'http://localhost:3000/login'
 }), googleCallbackHandler);
 
 // Logout route
