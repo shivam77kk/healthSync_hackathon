@@ -1,9 +1,9 @@
 "use client"
 import { useState } from "react"
-import Sidebar from "../components/doctor-dashboard/Sidebar"
-import Header from "../components/doctor-dashboard/Header"
-import ReportsHeader from "../components/dashboard/ReportsHeader"
-import ReportsGrid from "../components/dashboard/ReportsGrid"
+import Sidebar from "../../components/doctor-dashboard/Sidebar"
+import Header from "../../components/doctor-dashboard/Header"
+import ReportsHeader from "../../components/doctor-dashboard/ReportsHeader"
+import ReportsGrid from "../../components/doctor-dashboard/ReportsGrid"
 
 export default function MedicalReportsPage() {
   const [activeNav, setActiveNav] = useState("reports")

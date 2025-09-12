@@ -1,5 +1,5 @@
 import { Calendar } from "lucide-react"
-import { Card, CardContent } from "../ui/card"
+import Card,{ CardContent } from "@/components/ui/card"
 
 export default function WelcomeBanner({ userData }) {
   const currentDate = new Date().toLocaleDateString("en-US", {

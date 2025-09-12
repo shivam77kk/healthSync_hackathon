@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Sidebar from "../components/doctor-dashboard/Sidebar"
-import Header from "../components/doctor-dashboard/Header"
-import AppointmentsHeader from "../components/appointment/AppointmentsHeader"
-import AppointmentsGrid from "../components/appointment/AppointmentsGrid"
+import Sidebar from "../../components/doctor-dashboard/Sidebar"
+import Header from "../../components/doctor-dashboard/Header"
+import AppointmentsHeader from "../../components/appointment/AppointmentsHeader"
+import AppointmentsGrid from "../../components/appointment/AppointmentsGrid"
 
 export default function AppointmentsPage() {
   const [activeNav, setActiveNav] = useState("appointments")

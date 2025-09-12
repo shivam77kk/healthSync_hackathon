@@ -2,10 +2,9 @@
 
 import { useState, useRef } from "react"
 import { Upload, FileText, Image, File, X, Download, Eye, Trash2 } from "lucide-react"
-import Sidebar from "../components/dashboard/Sidebar"
-import Header from "../components/dashboard/Header"
-import { Button } from "../components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+
+import { Button } from "../../components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 
 export default function ReportsPage() {
   const [uploadedFiles, setUploadedFiles] = useState([])
@@ -80,10 +79,7 @@ export default function ReportsPage() {
     : uploadedFiles.filter(file => file.category === selectedCategory)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Sidebar />
-      <div className="ml-64 p-6">
-        <Header />
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
 
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -195,7 +191,6 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
     </div>
   )
 }

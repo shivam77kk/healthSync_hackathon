@@ -1,8 +1,8 @@
 "use client"
 
 import { Calendar, Video } from "lucide-react"
-import Card, { CardContent } from "@/app/components/ui/card"
-import { Button } from "@/app/components/ui/Button"
+import { Card, CardContent } from "../ui/card"
+import { Button } from "../ui/button"
 
 export default function UpcomingAppointments() {
   const appointments = [

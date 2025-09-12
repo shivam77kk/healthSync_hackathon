@@ -1,11 +1,11 @@
 "use client"
 
 import { Search, Bell, User, LogOut } from "lucide-react"
-import { Button } from "@/app/components/ui/Button"
-import { Input } from "@/app/components/ui/input"
-import { Avatar, AvatarFallback } from "@/app/components/ui/avatar"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Avatar, AvatarFallback } from "../ui/avatar"
 import { useRouter } from "next/navigation"
-import { api } from "@/lib/api"
+import { api } from "../../../lib/api"
 
 export default function Header() {
   const router = useRouter()

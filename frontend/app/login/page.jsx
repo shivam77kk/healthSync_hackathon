@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Input } from "@/app/components/ui/input"
-import { Button } from "@/app/components/ui/Button"
-import Card, { CardContent } from "@/app/components/ui/card"
-import { api } from "@/lib/api"
+import { Input } from "../components/ui/input"
+import { Button } from "../components/ui/button"
+import { Card, CardContent } from "../components/ui/card"
+import RoleSelection from "../components/auth/RoleSelection"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showRoleSelection, setShowRoleSelection] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -26,11 +27,23 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    router.push('/dashboard')
+    setShowRoleSelection(true)
   }
 
   const handleGoogleLogin = () => {
-    router.push('/dashboard')
+    setShowRoleSelection(true)
+  }
+
+  const handleRoleSelect = (role) => {
+    if (role === 'patient') {
+      router.push('/pages/patient-dashboard')
+    } else if (role === 'doctor') {
+      router.push('/pages/doctor-dashboard')
+    }
+  }
+
+  if (showRoleSelection) {
+    return <RoleSelection onRoleSelect={handleRoleSelect} />
   }
 
   return (

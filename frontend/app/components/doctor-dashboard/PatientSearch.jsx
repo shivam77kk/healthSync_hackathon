@@ -1,10 +1,10 @@
 "use client"
 
 import { Search, User } from "lucide-react"
-import { Input } from "@/app/components/ui/input"
-import Card, { CardContent } from "@/app/components/ui/card"
-import { Avatar, AvatarFallback } from "@/app/components/ui/avatar"
-import { Button } from "@/app/components/ui/Button"
+import { Input } from "../ui/input"
+import { Card, CardContent } from "../ui/card"
+import { Avatar, AvatarFallback } from "../ui/avatar"
+import { Button } from "../ui/button"
 
 export default function PatientSearch() {
   const patients = [

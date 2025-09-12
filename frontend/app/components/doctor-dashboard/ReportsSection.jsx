@@ -1,8 +1,8 @@
 "use client"
 
 import { BarChart3 } from "lucide-react"
-import Card, { CardContent } from "@/app/components/ui/card"
-import { Button } from "@/app/components/ui/Button"
+import { Card, CardContent } from "../ui/card"
+import { Button } from "../ui/button"
 
 export default function ReportsSection() {
   const reports = [{ name: "Johnson Ray" }, { name: "Raj Patil" }, { name: "Jay Singh" }]

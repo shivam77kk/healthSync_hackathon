@@ -1,7 +1,7 @@
 "use client"
 
 import { Calendar } from "lucide-react"
-import Card, { CardContent } from "@/app/components/ui/card"
+import { Card, CardContent } from "../ui/card"
 
 export default function HeroBanner() {
   return (

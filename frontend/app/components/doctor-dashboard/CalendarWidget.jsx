@@ -1,6 +1,6 @@
 "use client"
 
-import Card, { CardContent } from "@/app/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function CalendarWidget() {
   const calendarDays = Array.from({ length: 30 }, (_, i) => i + 1)

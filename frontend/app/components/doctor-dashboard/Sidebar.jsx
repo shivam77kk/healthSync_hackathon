@@ -1,5 +1,5 @@
 "use client"
-import { Settings, LogOut, BarChart3, FileText, Clock } from "lucide-react"
+import { Settings, LogOut, BarChart3, FileText, Clock, Newspaper } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function Sidebar({ activeNav, setActiveNav }) {
@@ -26,8 +26,8 @@ export default function Sidebar({ activeNav, setActiveNav }) {
 
           <button
             onClick={() => {
-              setActiveNav("dashboard")
-              router.push("/dashboard")
+              setActiveNav && setActiveNav("dashboard")
+              router.push("/pages/doctor-dashboard")
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
               activeNav === "dashboard"
@@ -41,8 +41,8 @@ export default function Sidebar({ activeNav, setActiveNav }) {
 
           <button
             onClick={() => {
-              setActiveNav("reports")
-              router.push("/medical-reports")
+              setActiveNav && setActiveNav("reports")
+              router.push("/pages/doctor-dashboard")
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
               activeNav === "reports"
@@ -56,8 +56,8 @@ export default function Sidebar({ activeNav, setActiveNav }) {
 
           <button
             onClick={() => {
-              setActiveNav("appointments")
-              router.push("/appointments")
+              setActiveNav && setActiveNav("appointments")
+              router.push("/pages/appointments")
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
               activeNav === "appointments"
@@ -67,6 +67,23 @@ export default function Sidebar({ activeNav, setActiveNav }) {
           >
             <Clock className="w-5 h-5" />
             <span className="font-medium">Appointments</span>
+          </button>
+
+
+
+          <button
+            onClick={() => {
+              setActiveNav && setActiveNav("news")
+              router.push("/pages/news")
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
+              activeNav === "news"
+                ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-200"
+                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
+            }`}
+          >
+            <Newspaper className="w-5 h-5" />
+            <span className="font-medium">Health News</span>
           </button>
         </div>
 

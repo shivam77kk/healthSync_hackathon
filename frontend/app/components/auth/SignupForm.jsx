@@ -4,7 +4,7 @@ import { useState } from "react"
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import GoogleSignInButton from "./GoogleSignInButton"
-import { userAPI } from "@/src/(pages)/services/api"
+import { userAPI } from "../../../lib/api"
 
 export default function SignupForm({ role, onSuccess, onError }) {
   const [formData, setFormData] = useState({

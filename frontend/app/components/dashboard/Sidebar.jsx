@@ -1,18 +1,17 @@
 "use client"
 
-import { Settings, LogOut, BarChart3, Stethoscope, Calendar, Globe } from "lucide-react"
-import { useRouter, usePathname } from "next/navigation"
+import { Settings, LogOut, BarChart3, Stethoscope, Calendar, Globe, User, Pill } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const navigationItems = [
-  { id: "dashboard", label: "Dashboard", icon: BarChart3, href: "/" },
-  { id: "doctor", label: "Doctor Interaction", icon: Stethoscope, href: "/doctor" },
-  { id: "reports", label: "Reports & Records", icon: BarChart3, href: "/reports" },
-  { id: "news", label: "Global News", icon: Globe, href: "/news" },
+  { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+  { id: "appointments", label: "Appointments", icon: Calendar },
+  { id: "reports", label: "Reports", icon: BarChart3 },
+  { id: "medications", label: "Medications", icon: Pill },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ activeView, setActiveView }) {
   const router = useRouter()
-  const pathname = usePathname()
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated")
@@ -21,8 +20,8 @@ export default function Sidebar() {
     window.location.reload()
   }
 
-  const handleNavigation = (href) => {
-    router.push(href)
+  const handleNavigation = (viewId) => {
+    setActiveView(viewId)
   }
 
   return (
@@ -45,11 +44,11 @@ export default function Sidebar() {
 
           {navigationItems.map((item) => {
             const IconComponent = item.icon
-            const isActive = pathname === item.href
+            const isActive = activeView === item.id
             return (
               <div
                 key={item.id}
-                onClick={() => handleNavigation(item.href)}
+                onClick={() => handleNavigation(item.id)}
                 className={`p-3 rounded-lg transition-all duration-300 cursor-pointer group ${
                   isActive
                     ? "bg-blue-500 dark:bg-blue-600 text-white hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-lg hover:scale-105"
