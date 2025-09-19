@@ -31,8 +31,31 @@ const doctorSchema = new mongoose.Schema({
     profileImage: {
         type: String,
         default: ""
+    },
+    followers: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        followedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    cautiooCount: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
+
+doctorSchema.virtual('followersCount').get(function() {
+    return this.followers.length;
+});
+
+doctorSchema.set('toJSON', {
+    virtuals: true
+});
 
 const Doctor = mongoose.model("Doctor", doctorSchema);
 export default Doctor;

@@ -38,10 +38,10 @@ import chatbotRoutes from './Routers/ChatBotRoutes.js';
 import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
 import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import voicePrescriptionRoutes from './Routers/VoicePrescriptionRoutes.js';
+import cautiooRoutes from './Routers/CautiooRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 15000,
     connectTimeoutMS: 15000,
@@ -89,6 +89,7 @@ app.use('/api/newsapi', newsApiRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
+app.use('/api/cautioo', cautiooRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
