@@ -55,14 +55,11 @@ mongoose.connect(process.env.MONGO_URI, {
         process.exit(1);
     });
 
-// Initialize Google OAuth strategy
 initializeGoogleStrategy();
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -80,7 +77,7 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/auth', googleAuthRoutes);
+app.use('/api/authgoogle', googleAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/documents', documentRoutes);
@@ -93,18 +90,15 @@ app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
 
-// Root route
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
     console.error('Global error:', err.stack);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
-// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

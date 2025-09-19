@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const doctorSchema = new mongoose.Schema({
-      name: {
+    name: {
         type: String,
         required: true
     },
@@ -19,15 +19,20 @@ const doctorSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    experience:{
+    experience: {
         type: Number,
-    required:true },
-    mode:{
-        type:String,
-        enum :["online","offline","both"],
-        required:true
+        required: true
+    },
+    mode: {
+        type: String,
+        enum: ["online", "offline", "both"],
+        required: true
+    },
+    profileImage: {
+        type: String,
+        default: ""
     }
-},{timestamps:true});
+}, { timestamps: true });
 
 const Doctor = mongoose.model("Doctor", doctorSchema);
 export default Doctor;
