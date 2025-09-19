@@ -39,6 +39,7 @@ import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
 import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import voicePrescriptionRoutes from './Routers/VoicePrescriptionRoutes.js';
 import cautiooRoutes from './Routers/CautiooRoutes.js';
+import chatRoutes from './Routers/ChatRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
@@ -90,6 +91,7 @@ app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
 app.use('/api/cautioo', cautiooRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');

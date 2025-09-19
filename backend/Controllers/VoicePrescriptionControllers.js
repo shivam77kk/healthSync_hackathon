@@ -5,13 +5,11 @@ import speechToTextService from '../services/speechToTextService.js';
 import notificationService from '../services/notificationService.js';
 import cloudinary from '../config/cloudinary.config.js';
 
-// Create Voice Prescription (Doctor only)
 export const createVoicePrescription = async (req, res) => {
     try {
         const doctorId = req.user.id;
         const { patientId, priority = 'normal', expiresAt, notes } = req.body;
         
-        // Validate required fields
         if (!patientId) {
             return res.status(400).json({ 
                 message: "Patient ID is required" 
@@ -24,19 +22,16 @@ export const createVoicePrescription = async (req, res) => {
             });
         }
         
-        // Verify doctor exists
         const doctor = await Doctor.findById(doctorId);
         if (!doctor) {
             return res.status(404).json({ message: "Doctor not found" });
         }
         
-        // Verify patient exists
         const patient = await User.findById(patientId);
         if (!patient) {
             return res.status(404).json({ message: "Patient not found" });
         }
         
-        // Get audio metadata
         const audioMetadata = speechToTextService.getAudioMetadata(
             req.file.buffer, 
             req.file.mimetype
@@ -48,33 +43,28 @@ export const createVoicePrescription = async (req, res) => {
             audioSize: audioMetadata.size,
             audioDuration: audioMetadata.duration
         });
-        
-        // Upload audio to cloud storage
+
         const audioFileName = `${doctorId}_${patientId}_${Date.now()}`;
         const audioUploadResult = await speechToTextService.uploadAudio(
             req.file.buffer, 
             audioFileName
         );
         
-        // Transcribe audio to text
         const transcriptionResult = await speechToTextService.transcribe(
             req.file.buffer,
             {
                 language: 'en',
-                preferredProvider: 'mock', // Use mock for development
+                preferredProvider: 'mock', 
                 fallback: true
             }
         );
         
-        // Process medical transcript for better accuracy
         const processedTranscript = speechToTextService.processMedicalTranscript(
             transcriptionResult.transcript
         );
-        
-        // Parse prescription information from transcript
+    
         const prescriptionData = parsePrescriptionFromTranscript(processedTranscript);
         
-        // Create prescription document
         const prescription = new Prescription({
             patient: patientId,
             doctor: doctorId,
@@ -95,16 +85,13 @@ export const createVoicePrescription = async (req, res) => {
         
         await prescription.save();
         
-        // Populate references for response
         await prescription.populate('doctor', 'name email profileImage experience');
         await prescription.populate('patient', 'name email profileImage');
         
-        // Send notification to patient
         try {
             await notificationService.sendPrescriptionNotification(patient, prescription);
         } catch (notificationError) {
             console.error('Failed to send notification:', notificationError);
-            // Don't fail the request if notification fails
         }
         
         res.status(201).json({
@@ -128,7 +115,6 @@ export const createVoicePrescription = async (req, res) => {
     }
 };
 
-// Get Doctor's Voice Prescriptions
 export const getDoctorVoicePrescriptions = async (req, res) => {
     try {
         const doctorId = req.user.id;
@@ -173,7 +159,6 @@ export const getDoctorVoicePrescriptions = async (req, res) => {
     }
 };
 
-// Get Patient's Voice Prescriptions
 export const getPatientVoicePrescriptions = async (req, res) => {
     try {
         const patientId = req.user.id;
@@ -218,7 +203,6 @@ export const getPatientVoicePrescriptions = async (req, res) => {
     }
 };
 
-// Get Single Voice Prescription
 export const getVoicePrescriptionById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -231,13 +215,11 @@ export const getVoicePrescriptionById = async (req, res) => {
         if (!prescription) {
             return res.status(404).json({ message: "Voice prescription not found" });
         }
-        
-        // Check if user is authorized to view this prescription
+
         if (prescription.patient._id.toString() !== userId && prescription.doctor._id.toString() !== userId) {
             return res.status(403).json({ message: "Access denied. Not authorized to view this prescription" });
         }
         
-        // Mark as received if patient is viewing for the first time
         if (prescription.patient._id.toString() === userId && prescription.status === 'sent') {
             prescription.status = 'received';
             await prescription.save();
@@ -254,7 +236,6 @@ export const getVoicePrescriptionById = async (req, res) => {
     }
 };
 
-// Acknowledge Voice Prescription (Patient only)
 export const acknowledgeVoicePrescription = async (req, res) => {
     try {
         const { id } = req.params;
@@ -297,7 +278,6 @@ export const acknowledgeVoicePrescription = async (req, res) => {
     }
 };
 
-// Update Voice Prescription (Doctor only)
 export const updateVoicePrescription = async (req, res) => {
     try {
         const { id } = req.params;
@@ -315,7 +295,6 @@ export const updateVoicePrescription = async (req, res) => {
             });
         }
         
-        // Update allowed fields
         if (notes !== undefined) prescription.notes = notes;
         if (priority) prescription.priority = priority;
         if (expiresAt) prescription.expiresAt = new Date(expiresAt);
@@ -340,7 +319,6 @@ export const updateVoicePrescription = async (req, res) => {
     }
 };
 
-// Delete Voice Prescription (Doctor only)
 export const deleteVoicePrescription = async (req, res) => {
     try {
         const { id } = req.params;
@@ -357,15 +335,12 @@ export const deleteVoicePrescription = async (req, res) => {
             });
         }
         
-        // Delete audio file from cloud storage
         if (prescription.audioUrl) {
             try {
-                // Extract public_id from cloudinary URL
                 const publicId = prescription.audioUrl.split('/').slice(-2).join('/').split('.')[0];
                 await cloudinary.uploader.destroy(publicId, { resource_type: 'auto' });
             } catch (cloudinaryError) {
                 console.error('Failed to delete audio from cloudinary:', cloudinaryError);
-                // Continue with database deletion
             }
         }
         
@@ -384,7 +359,6 @@ export const deleteVoicePrescription = async (req, res) => {
     }
 };
 
-// Test Speech-to-Text (for development)
 export const testSpeechToText = async (req, res) => {
     try {
         if (!req.file) {
