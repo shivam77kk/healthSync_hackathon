@@ -61,60 +61,45 @@ router.get('/patient/prescriptions',
     getPatientVoicePrescriptions
 );
 
-// Acknowledge voice prescription (Patient only)
 router.post('/patient/:id/acknowledge', 
     authenticateToken,
     isUser,
     acknowledgeVoicePrescription
 );
 
-// Get patient notifications (Patient only)
 router.get('/patient/notifications', 
     authenticateToken,
     isUser,
     getPatientNotifications
 );
 
-// Mark notification as read (Patient only)
+
 router.post('/patient/notifications/:notificationId/read', 
     authenticateToken,
     isUser,
     markNotificationAsRead
 );
 
-// Get notification statistics (Patient only)
 router.get('/patient/notification-stats', 
     authenticateToken,
     isUser,
     getNotificationStats
 );
 
-// =================== SHARED ROUTES ===================
-
-// Get single voice prescription by ID (Both doctor and patient can access)
 router.get('/:id', 
     authenticateToken,
     getVoicePrescriptionById
 );
 
-// =================== DEVELOPMENT/TESTING ROUTES ===================
-
-// Test speech-to-text functionality
 router.post('/test-speech-to-text', 
     authenticateToken,
     voicePrescriptionUpload.single('audio'),
     testSpeechToText
 );
 
-// =================== LEGACY ROUTES (DEPRECATED) ===================
-
-// Legacy endpoints for backward compatibility
 router.post('/process', authenticateToken, processVoicePrescription);
 router.post('/save', authenticateToken, savePrescription);
 
-// =================== ERROR HANDLING MIDDLEWARE ===================
-
-// Handle multer/audio upload errors
 router.use(handleAudioUploadError);
 
 export default router;
