@@ -4,6 +4,18 @@ import { googleCallbackHandler, logoutHandler } from '../Controllers/GoogleAuthC
 
 const router = express.Router();
 
+// Basic route to test if Google auth is working
+router.get('/', (req, res) => {
+    res.json({ 
+        message: 'Google Authentication Service is running',
+        availableRoutes: {
+            'GET /google': 'Initiate Google OAuth login',
+            'GET /google/callback': 'Google OAuth callback',
+            'POST /logout': 'Logout user'
+        }
+    });
+});
+
 // Initiate Google auth
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 

@@ -1,14 +1,12 @@
-// import express from 'express';
-// import { getSpecialistSuggestion } from '../Controllers/AiTriageControllers.js';
-// import { authenticateToken } from '../middleware/authMiddleware.js';
-// import triageRoutes from './Routers/AiTriageControllers.js';
+import express from 'express';
+import { getSpecialistSuggestion } from '../Controllers/AiTriageControllers.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
-// const router = express.Router();
+const router = express.Router();
 
-// router.post('/specialist', authenticateToken, getSpecialistSuggestion);
-// app.use('/api/triage', triageRoutes);
+router.post('/specialist', authenticateToken, getSpecialistSuggestion);
 
-// export default router;
+export default router;
 
 
 

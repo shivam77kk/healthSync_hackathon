@@ -18,6 +18,18 @@ if (!process.env.SESSION_SECRET) {
     process.exit(1);
 }
 
+// Verify Twilio environment variables for video calling
+if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_API_KEY || !process.env.TWILIO_API_SECRET) {
+    console.warn('Warning: Twilio environment variables are not fully configured. Video calling features may not work properly.');
+    console.warn('Required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_API_KEY, TWILIO_API_SECRET');
+}
+
+// Verify Gemini API key for symptom assessment
+if (!process.env.GEMINI_API_KEY) {
+    console.warn('Warning: GEMINI_API_KEY is not configured. Symptom assessment features may not work properly.');
+    console.warn('Required: GEMINI_API_KEY for AI-powered symptom analysis and medicine suggestions');
+}
+
 // Import dependencies after dotenv configuration
 import express from 'express';
 import mongoose from 'mongoose';
@@ -38,31 +50,37 @@ import chatbotRoutes from './Routers/ChatBotRoutes.js';
 import riskScoreRoutes from './Routers/PredictiveScoringRoutes.js';
 import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import voicePrescriptionRoutes from './Routers/VoicePrescriptionRoutes.js';
+import cautiooRoutes from './Routers/CautiooRoutes.js';
+import chatRoutes from './Routers/ChatRoutes.js';
+import videoCallRoutes from './Routers/VideoCallRoutes.js';
+import symptomAssessmentRoutes from './Routers/SymptomAssessmentRoutes.js';
+import aiTriageRoutes from './Routers/AiTriageRoutes.js';
+import healthAssessmentRoutes from './Routers/HealthAssessmentRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 15000,
-    connectTimeoutMS: 15000,
-    socketTimeoutMS: 15000
-})
-    .then(() => {
+const connectWithRetry = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 15000,
+            connectTimeoutMS: 15000,
+            socketTimeoutMS: 15000
+        });
         console.log('MongoDB connected successfully');
-    })
-    .catch((err) => {
+    } catch (err) {
         console.error('MongoDB connection error:', err.message);
-        process.exit(1);
-    });
+        console.log('Retrying MongoDB connection in 10 seconds...');
+        setTimeout(connectWithRetry, 10000);
+    }
+};
 
-// Initialize Google OAuth strategy
+connectWithRetry();
+
 initializeGoogleStrategy();
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -80,7 +98,7 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/auth', googleAuthRoutes);
+app.use('/api/authgoogle', googleAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/documents', documentRoutes);
@@ -92,19 +110,22 @@ app.use('/api/newsapi', newsApiRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/predictive-score', riskScoreRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
+app.use('/api/cautioo', cautiooRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/video-call', videoCallRoutes);
+app.use('/api/symptom-assessment', symptomAssessmentRoutes);
+app.use('/api/triage', aiTriageRoutes);
+app.use('/api/health-assessment', healthAssessmentRoutes);
 
-// Root route
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
     console.error('Global error:', err.stack);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
-// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

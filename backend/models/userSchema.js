@@ -51,7 +51,29 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true
-    }
+    },
+    following: [{
+        doctor: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Doctor',
+            required: true
+        },
+        followedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    likedCautioos: [{
+        cautioo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Cautioo',
+            required: true
+        },
+        likedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

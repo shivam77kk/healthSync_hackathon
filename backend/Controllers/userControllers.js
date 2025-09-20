@@ -1,8 +1,7 @@
 import User from '../models/userSchema.js';
+import { v2 as cloudinary } from 'cloudinary';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { v2 as cloudinary } from 'cloudinary';
-import 'dotenv/config'; // Ensure dotenv is loaded
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,17 +9,16 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-
-const generateTokens = async (userId) => {
+const generateTokens = async (userId) => { 
     try {
         const accessToken = jwt.sign(
-            { id: userId },
+            { id: userId, role: 'user' }, 
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '1h' }
         );
 
         const refreshToken = jwt.sign(
-            { id: userId },
+            { id: userId, role: 'user' }, 
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '7d' }
         );
@@ -34,9 +32,9 @@ const generateTokens = async (userId) => {
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password, age, gender, bloodGroup } = req.body;
-
+        
         if (!name || !email || !password || !age || !gender || !bloodGroup) {
-            return res.status(400).json({ message: "All fields are required" });
+            return res.status(400).json({ message: "Name, email, password, age, gender, and blood group are required" });
         }
 
         const existingUser = await User.findOne({ email });
@@ -53,28 +51,32 @@ export const registerUser = async (req, res) => {
             age,
             gender,
             bloodGroup,
-            refreshToken: ""
+            profileImage: ""
         });
 
         await newUser.save();
 
-        res.status(201).json({ 
-            message: "User registered successfully", 
+        res.status(201).json({
+            message: "User registered successfully.",
             user: {
                 id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
+                age: newUser.age,
+                gender: newUser.gender,
+                bloodGroup: newUser.bloodGroup,
+                profileImage: newUser.profileImage,
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error registering user", error: error.message });
     }
 };
 
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
@@ -98,46 +100,21 @@ export const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        user.refreshToken = refreshToken;
-        await user.save();
-
-        res.status(200).json({ 
+        res.status(200).json({
             message: "Logged in successfully",
             accessToken,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                profileImage: user.profileImage
+                age: user.age,
+                gender: user.gender,
+                bloodGroup: user.bloodGroup,
+                profileImage: user.profileImage,
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-export const changePassword = async (req, res) => {
-    try {
-        const { newPassword } = req.body;
-        const userId = req.user.id; 
-
-        if (!newPassword || newPassword.length < 8) {
-            return res.status(400).json({ message: "Password must be at least 8 characters long" });
-        }
-
-        const user = await User.findById(userId).select('+password');
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-        user.password = hashedNewPassword;
-        await user.save();
-
-        res.status(200).json({ message: "Password updated successfully" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error logging in", error: error.message });
     }
 };
 
@@ -153,15 +130,9 @@ export const uploadProfileImage = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: "No image file provided" });
         }
-
-        console.log('Uploading to Cloudinary:', {
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            folder: 'healthcare_app_profile_images'
-        });
-
+        
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
-            folder: 'healthcare_app_profile_images',
+            folder: 'healthcare_user_profiles', 
         });
 
         user.profileImage = result.secure_url;
@@ -173,53 +144,73 @@ export const uploadProfileImage = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Cloudinary upload error:", {
-            message: error.message,
-            stack: error.stack,
-            name: error.name,
-            http_code: error.http_code
-        });
+        console.error("Cloudinary upload error:", error);
         res.status(500).json({ message: "Error uploading image to Cloudinary", error: error.message });
+    }
+};
+
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Current password and new password are required" });
+        }
+
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedNewPassword;
+        await user.save();
+
+        res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error changing password", error: error.message });
     }
 };
 
 export const refreshAccessToken = async (req, res) => {
     try {
         const refreshToken = req.cookies.jwt;
+        
         if (!refreshToken) {
-            return res.status(401).json({ message: "Refresh token is missing" });
-        }
-
-        const user = await User.findOne({ refreshToken });
-        if (!user) {
-            return res.status(403).json({ message: "Invalid refresh token" });
+            return res.status(401).json({ message: "Refresh token not found" });
         }
 
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
-            if (err || decoded.id !== user._id.toString()) {
-                return res.status(403).json({ message: "Invalid or expired refresh token" });
+            if (err) {
+                return res.status(403).json({ message: "Invalid refresh token" });
             }
 
-            const { accessToken, refreshToken: newRefreshToken } = await generateTokens(user._id);
+            const user = await User.findById(decoded.id);
+            if (!user) {
+                return res.status(403).json({ message: "User not found" });
+            }
 
-            res.cookie('jwt', newRefreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'Strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            const { accessToken } = await generateTokens(user._id);
             
-            user.refreshToken = newRefreshToken;
-            await user.save();
-
             res.status(200).json({
-                message: "Tokens refreshed successfully",
+                message: "Access token refreshed successfully",
                 accessToken,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    profileImage: user.profileImage
+                }
             });
         });
-
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error refreshing token", error: error.message });
     }
 };
 
@@ -227,41 +218,37 @@ export const getUserProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId).select('-password -refreshToken');
-        
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.status(200).json(user);
+        res.status(200).json({
+            message: "User profile retrieved successfully",
+            user,
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error retrieving user profile", error: error.message });
     }
 };
 
 export const logoutUser = async (req, res) => {
     try {
-        
-        const refreshToken = req.cookies.jwt;
-        
-        if (!refreshToken) {
-            return res.sendStatus(204); 
-        }
-
-        const user = await User.findOne({ refreshToken });
+        const userId = req.user.id;
+        const user = await User.findById(userId); 
         if (user) {
-            user.refreshToken = '';
+            user.refreshToken = null;
             await user.save();
         }
 
-    
-        res.clearCookie('jwt', { 
+        res.clearCookie('jwt', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: 'Strict'
         });
 
-        res.status(200).json({ message: "Logged out successfully" });
+        res.status(200).json({ message: "Logout successful" });
     } catch (error) {
-        res.status(500).json({ message: "Error during logout", error: error.message });
+        res.status(500).json({ message: "Error logging out", error: error.message });
     }
 };

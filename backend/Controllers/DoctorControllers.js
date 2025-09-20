@@ -7,7 +7,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Doctor from '../models/doctorSchema.js';
 
-// Ensure Cloudinary is configured (add this at the top if not already in another file)
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -17,13 +16,13 @@ cloudinary.config({
 const generateTokens = async (userId) => { 
     try {
         const accessToken = jwt.sign(
-            { id: userId, role: 'doctor' }, // Added role
+            { id: userId, role: 'doctor' }, 
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '1h' }
         );
 
         const refreshToken = jwt.sign(
-            { id: userId, role: 'doctor' }, // Added role
+            { id: userId, role: 'doctor' }, 
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '7d' }
         );
@@ -34,10 +33,11 @@ const generateTokens = async (userId) => {
     }
 };
 
+// **Updated `registerDoctor` function to handle profile image upload**
 export const registerDoctor = async (req, res) => {
     try {
         const { name, email, password, age, experience, mode } = req.body;
-
+        
         if (!name || !email || !password || !age || !experience || !mode) {
             return res.status(400).json({ message: "Name, email, password, age, experience, and mode are required" });
         }
@@ -49,6 +49,15 @@ export const registerDoctor = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        let profileImageUrl = ""; 
+
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'healthcare_doctor_profiles',
+            });
+            profileImageUrl = result.secure_url;
+        }
+
         const newDoctor = new Doctor({
             name,
             email,
@@ -56,6 +65,7 @@ export const registerDoctor = async (req, res) => {
             age,
             experience,
             mode,
+            profileImage: profileImageUrl, 
         });
 
         await newDoctor.save();
@@ -66,17 +76,18 @@ export const registerDoctor = async (req, res) => {
                 id: newDoctor._id,
                 name: newDoctor.name,
                 email: newDoctor.email,
+                profileImage: newDoctor.profileImage,
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error registering doctor", error: error.message });
     }
 };
 
 export const loginDoctor = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
@@ -100,9 +111,6 @@ export const loginDoctor = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        doctor.refreshToken = refreshToken;
-        await doctor.save();
-
         res.status(200).json({
             message: "Logged in successfully",
             accessToken,
@@ -110,11 +118,42 @@ export const loginDoctor = async (req, res) => {
                 id: doctor._id,
                 name: doctor.name,
                 email: doctor.email,
-                profileImage: doctor.profileImage
+                profileImage: doctor.profileImage, 
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error logging in", error: error.message });
+    }
+};
+
+export const uploadProfileImage = async (req, res) => {
+    try {
+        const doctorId = req.user.id; 
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({ message: "Doctor not found" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "No image file provided" });
+        }
+        
+        const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
+            folder: 'healthcare_doctor_profiles', 
+        });
+
+        doctor.profileImage = result.secure_url;
+        await doctor.save();
+
+        res.status(200).json({
+            message: "Profile image uploaded successfully",
+            profileImage: doctor.profileImage
+        });
+
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        res.status(500).json({ message: "Error uploading image to Cloudinary", error: error.message });
     }
 };
 
@@ -122,24 +161,24 @@ export const uploadDoctorDocument = async (req, res) => {
     try {
         const { title } = req.body;
         const doctorId = req.user.id;
-
+        
         if (!req.file) {
             return res.status(400).json({ message: "No document file provided" });
         }
-
+        
         const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
             folder: 'healthcare_doctor_documents',
         });
-
+        
         const newDoc = new DoctorDocument({
             doctorId,
             title,
             fileUrl: result.secure_url,
             publicId: result.public_id,
         });
-
+        
         await newDoc.save();
-
+        
         res.status(201).json({
             message: "Document uploaded successfully",
             document: newDoc,
@@ -229,8 +268,7 @@ export const getPatientHistory = async (req, res) => {
 export const logoutDoctor = async (req, res) => {
     try {
         const doctorId = req.user.id;
-
-        const doctor = await Doctor.findById(doctorId); // Changed to Doctor
+        const doctor = await Doctor.findById(doctorId); 
         if (doctor) {
             doctor.refreshToken = null;
             await doctor.save();
