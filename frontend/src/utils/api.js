@@ -1,4 +1,4 @@
-const API_BASE_URL = `${process.env.VITE_API_URL || 'http://localhost:5000'}/api`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api`;
 
 class ApiService {
   constructor() {
@@ -66,22 +66,36 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(email, password) {
-    const response = await this.request('/auth/login', {
+  async login(email, password, userType = 'patient') {
+    const endpoint = userType === 'doctor' ? '/doctors/login' : '/auth/login';
+    const response = await this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify({ email, password })
     });
     if (response?.accessToken) {
       this.setToken(response.accessToken);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userType', userType);
+        localStorage.setItem('user', JSON.stringify(response.user || response.doctor));
+      }
     }
     return response;
   }
 
-  async register(userData) {
-    return await this.request('/auth/signup', {
+  async register(userData, userType = 'patient') {
+    const endpoint = userType === 'doctor' ? '/doctors/register' : '/auth/signup';
+    return await this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(userData)
     });
+  }
+
+  async googleLogin(userType = 'patient') {
+    if (typeof window !== 'undefined') {
+      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/authgoogle/google?type=${userType}`;
+      console.log('Google Auth URL:', url);
+      window.location.href = url;
+    }
   }
 
   async logout() {
@@ -95,6 +109,7 @@ class ApiService {
   // User endpoints
   async getUserProfile() {
     try {
+      const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : 'patient';
       const result = await this.request('/users/profile');
       return result;
     } catch (error) {
@@ -114,11 +129,33 @@ class ApiService {
       if (!this.token) {
         return { appointments: [] };
       }
-      const result = await this.request('/appointments/user');
+      const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : 'patient';
+      const endpoint = userType === 'doctor' ? '/appointments/doctor' : '/appointments/user';
+      const result = await this.request(endpoint);
       return result || { appointments: [] };
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
       return { appointments: [] };
+    }
+  }
+
+  async getDoctorAvailability(doctorId, date) {
+    try {
+      const result = await this.request(`/appointments/availability/${doctorId}?date=${date}`);
+      return result || { availability: null };
+    } catch (error) {
+      console.error('Failed to fetch doctor availability:', error);
+      return { availability: null };
+    }
+  }
+
+  async getPatientHistory(patientId) {
+    try {
+      const result = await this.request(`/doctors/patient/${patientId}/history`);
+      return result || { patient: null, history: { healthLogs: [], documents: [] } };
+    } catch (error) {
+      console.error('Failed to fetch patient history:', error);
+      return { patient: null, history: { healthLogs: [], documents: [] } };
     }
   }
 
@@ -290,6 +327,132 @@ class ApiService {
     } catch (error) {
       console.error('Auth verification failed:', error);
       this.clearToken();
+      throw error;
+    }
+  }
+
+  // Voice Prescription endpoints
+  async getVoicePrescriptions() {
+    try {
+      const result = await this.request('/voice-prescription');
+      return result || { prescriptions: [] };
+    } catch (error) {
+      console.error('Failed to fetch voice prescriptions:', error);
+      return { prescriptions: [] };
+    }
+  }
+
+  async createVoicePrescription(prescriptionData) {
+    return await this.request('/voice-prescription/create', {
+      method: 'POST',
+      body: JSON.stringify(prescriptionData)
+    });
+  }
+
+  async processVoiceToText(audioData) {
+    const formData = new FormData();
+    formData.append('audio', audioData);
+    
+    const headers = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/voice-prescription/transcribe`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to process voice to text:', error);
+      return { transcription: 'Voice processing unavailable' };
+    }
+  }
+
+  // Report Viewer endpoints
+  async getReports(type = null) {
+    try {
+      const url = type ? `/reports?type=${type}` : '/reports';
+      const result = await this.request(url);
+      return result || { reports: [] };
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      return { reports: [] };
+    }
+  }
+
+  async downloadReport(reportId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reports/${reportId}/download`, {
+        headers: this.getHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.blob();
+    } catch (error) {
+      console.error('Failed to download report:', error);
+      throw error;
+    }
+  }
+
+  async viewReport(reportId) {
+    try {
+      const result = await this.request(`/reports/${reportId}`);
+      return result || {};
+    } catch (error) {
+      console.error('Failed to view report:', error);
+      return {};
+    }
+  }
+
+  // Voice Notes endpoints
+  async getVoiceNotes(type = null) {
+    try {
+      const url = type ? `/voice-notes?type=${type}` : '/voice-notes';
+      const result = await this.request(url);
+      return result || { notes: [] };
+    } catch (error) {
+      console.error('Failed to fetch voice notes:', error);
+      return { notes: [] };
+    }
+  }
+
+  async createVoiceNote(noteData) {
+    return await this.request('/voice-notes/create', {
+      method: 'POST',
+      body: JSON.stringify(noteData)
+    });
+  }
+
+  async deleteVoiceNote(noteId) {
+    return await this.request(`/voice-notes/${noteId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async downloadVoiceNote(noteId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/voice-notes/${noteId}/download`, {
+        headers: this.getHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.blob();
+    } catch (error) {
+      console.error('Failed to download voice note:', error);
       throw error;
     }
   }

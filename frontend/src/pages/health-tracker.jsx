@@ -3,6 +3,11 @@ import { Plus } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/patient-dashboard/Sidebar';
+import BloodPressurePopup from '../components/BloodPressurePopup';
+import BloodSugarPopup from '../components/BloodSugarPopup';
+import TemperaturePopup from '../components/TemperaturePopup';
+import HeartRatePopup from '../components/HeartRatePopup';
+import WeightPopup from '../components/WeightPopup';
 import api from '../utils/api';
 
 export default function HealthTracker() {
@@ -12,6 +17,11 @@ export default function HealthTracker() {
   const [healthLogs, setHealthLogs] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showBloodPressurePopup, setShowBloodPressurePopup] = useState(false);
+  const [showBloodSugarPopup, setShowBloodSugarPopup] = useState(false);
+  const [showTemperaturePopup, setShowTemperaturePopup] = useState(false);
+  const [showHeartRatePopup, setShowHeartRatePopup] = useState(false);
+  const [showWeightPopup, setShowWeightPopup] = useState(false);
 
   const handleProfileClick = () => {
     router.push('/patient-profile');
@@ -33,19 +43,62 @@ export default function HealthTracker() {
     setReminders(response?.reminders || []);
   };
 
-  const handleLogVital = async (vitalType, value) => {
+  const handleLogVital = async (vitalType, data) => {
     try {
       const logData = {
-        date: new Date().toISOString(),
-        vitals: { [vitalType]: value },
+        date: data.date || new Date().toISOString(),
+        time: data.time || new Date().toLocaleTimeString(),
+        vitals: { [vitalType]: data[vitalType] || data.value },
         symptoms: [],
-        notes: `${vitalType} logged: ${value}`
+        notes: `${vitalType} logged: ${data[vitalType] || data.value} on ${data.date} at ${data.time}`
       };
       await api.createHealthLog(logData);
+      alert(`${vitalType} logged successfully!`);
       fetchHealthLogs();
     } catch (error) {
       console.error('Error logging vital:', error);
+      alert(`Failed to log ${vitalType}. Please try again.`);
     }
+  };
+
+  const handleBloodPressureClick = () => {
+    setShowBloodPressurePopup(true);
+  };
+
+  const handleBloodSugarClick = () => {
+    setShowBloodSugarPopup(true);
+  };
+
+  const handleTemperatureClick = () => {
+    setShowTemperaturePopup(true);
+  };
+
+  const handleHeartRateClick = () => {
+    setShowHeartRatePopup(true);
+  };
+
+  const handleWeightClick = () => {
+    setShowWeightPopup(true);
+  };
+
+  const handleSaveBloodPressure = async (data) => {
+    await handleLogVital('bloodPressure', data);
+  };
+
+  const handleSaveBloodSugar = async (data) => {
+    await handleLogVital('bloodSugar', data);
+  };
+
+  const handleSaveTemperature = async (data) => {
+    await handleLogVital('temperature', data);
+  };
+
+  const handleSaveHeartRate = async (data) => {
+    await handleLogVital('heartRate', data);
+  };
+
+  const handleSaveWeight = async (data) => {
+    await handleLogVital('weight', data);
   };
 
   const tabs = ['Vitals', 'Daily Goals', 'Medications', 'Nutritions'];
@@ -184,11 +237,30 @@ export default function HealthTracker() {
                   </span>
                 </div>
 
-                <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-all duration-300 hover:scale-105 group-hover:font-medium">
+                <button 
+                  onClick={() => {
+                    if (vital.title === 'Blood Pressure') {
+                      handleBloodPressureClick();
+                    } else if (vital.title === 'Blood Sugar') {
+                      handleBloodSugarClick();
+                    } else if (vital.title === 'Temperature') {
+                      handleTemperatureClick();
+                    } else if (vital.title === 'Heart Rate') {
+                      handleHeartRateClick();
+                    } else if (vital.title === 'Weight') {
+                      handleWeightClick();
+                    } else {
+                      // Handle other vitals
+                      console.log('Logging', vital.title);
+                    }
+                  }}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-all duration-300 hover:scale-105 group-hover:font-medium"
+                >
                   <Plus className="w-4 h-4" />
                   <span className="text-sm">
                     {vital.title === 'Weight' ? 'Log Weight' : 
-                     vital.title === 'Temperature' ? 'Log Temp' : 'Log Reading'}
+                     vital.title === 'Temperature' ? 'Log Temp' : 
+                     vital.title === 'Blood Pressure' ? 'Log Reading' : 'Log Reading'}
                   </span>
                 </button>
               </div>
@@ -217,6 +289,36 @@ export default function HealthTracker() {
             <p className="text-gray-500">Track your nutrition intake here</p>
           </div>
         )}
+        
+        <BloodPressurePopup 
+          isOpen={showBloodPressurePopup}
+          onClose={() => setShowBloodPressurePopup(false)}
+          onSave={handleSaveBloodPressure}
+        />
+        
+        <BloodSugarPopup 
+          isOpen={showBloodSugarPopup}
+          onClose={() => setShowBloodSugarPopup(false)}
+          onSave={handleSaveBloodSugar}
+        />
+        
+        <TemperaturePopup 
+          isOpen={showTemperaturePopup}
+          onClose={() => setShowTemperaturePopup(false)}
+          onSave={handleSaveTemperature}
+        />
+        
+        <HeartRatePopup 
+          isOpen={showHeartRatePopup}
+          onClose={() => setShowHeartRatePopup(false)}
+          onSave={handleSaveHeartRate}
+        />
+        
+        <WeightPopup 
+          isOpen={showWeightPopup}
+          onClose={() => setShowWeightPopup(false)}
+          onSave={handleSaveWeight}
+        />
       </div>
     </div>
   );

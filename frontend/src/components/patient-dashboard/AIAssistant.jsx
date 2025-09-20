@@ -1,13 +1,21 @@
+import { useState } from 'react';
 import { Mic } from 'lucide-react';
 import { useRouter } from 'next/router';
+import AIHealthAssistantPopup from '../AIHealthAssistantPopup';
 
 export default function AIAssistant() {
   const router = useRouter();
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleClick = () => {
+    setShowPopup(true);
+  };
 
   return (
+    <>
     <div 
       className="bg-[#2e7d32] rounded-2xl p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group"
-      onClick={() => router.push('/ai-health-assistant')}
+      onClick={handleClick}
     >
       <h3 className="font-bold text-white mb-4 group-hover:text-gray-100 transition-colors duration-300">AI Health Assistant</h3>
       
@@ -21,5 +29,11 @@ export default function AIAssistant() {
         Tap to Speak
       </p>
     </div>
+    
+    <AIHealthAssistantPopup 
+      isOpen={showPopup} 
+      onClose={() => setShowPopup(false)} 
+    />
+    </>
   );
 }

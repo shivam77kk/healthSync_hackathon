@@ -12,7 +12,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    sessionStorage.removeItem('fromLanding');
+    router.push('/landing');
   };
 
   return (

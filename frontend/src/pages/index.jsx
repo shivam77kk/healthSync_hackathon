@@ -14,6 +14,7 @@ import api from '../utils/api';
 
 export default function Dashboard() {
   const router = useRouter();
+  const { userType } = useAuth();
   
   // Check if user came from landing page, if not redirect to landing
   useEffect(() => {
@@ -21,6 +22,14 @@ export default function Dashboard() {
     if (!fromLanding) {
       router.push('/landing');
       return;
+    }
+  }, [router]);
+
+  // Redirect doctors to their dashboard
+  useEffect(() => {
+    const storedUserType = localStorage.getItem('userType');
+    if (storedUserType === 'doctor' && router.pathname === '/') {
+      router.push('/doctor-dashboard');
     }
   }, [router]);
 

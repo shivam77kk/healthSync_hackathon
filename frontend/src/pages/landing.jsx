@@ -1,26 +1,99 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Landing() {
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handlePatientClick = () => {
     router.push('/patient-signup');
   };
 
   const handleDoctorClick = () => {
-    sessionStorage.setItem('fromLanding', 'true');
-    router.push('/doctor-dashboard');
+    router.push('/doctor-signup');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-purple-900 relative overflow-hidden">
-      {/* Background Animation */}
+      {/* Dynamic Background Animation */}
       <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        <div 
+          className="absolute w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse transition-all duration-1000 ease-out"
+          style={{
+            top: `${20 + scrollY * 0.1}px`,
+            left: `${20 + mousePosition.x * 0.02}px`,
+            transform: `scale(${1 + scrollY * 0.0005})`
+          }}
+        ></div>
+        <div 
+          className="absolute w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000 transition-all duration-1000 ease-out"
+          style={{
+            top: `${160 - scrollY * 0.05}px`,
+            right: `${20 + mousePosition.y * 0.02}px`,
+            transform: `scale(${1 + scrollY * 0.0003}) rotate(${mousePosition.x * 0.1}deg)`
+          }}
+        ></div>
+        <div 
+          className="absolute w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000 transition-all duration-1000 ease-out"
+          style={{
+            bottom: `${20 + scrollY * 0.08}px`,
+            left: '50%',
+            transform: `translateX(-50%) scale(${1 + scrollY * 0.0004}) rotate(${-mousePosition.y * 0.1}deg)`
+          }}
+        ></div>
+        
+        {/* Cursor follower orbs */}
+        <div 
+          className="absolute w-32 h-32 bg-cyan-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 pointer-events-none transition-all duration-300 ease-out"
+          style={{
+            left: `${mousePosition.x - 64}px`,
+            top: `${mousePosition.y - 64}px`
+          }}
+        ></div>
+        <div 
+          className="absolute w-20 h-20 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 pointer-events-none transition-all duration-500 ease-out"
+          style={{
+            left: `${mousePosition.x - 40 + Math.sin(Date.now() * 0.001) * 20}px`,
+            top: `${mousePosition.y - 40 + Math.cos(Date.now() * 0.001) * 20}px`
+          }}
+        ></div>
+      </div>
+      
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-white rounded-full opacity-20 animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+              transform: `translateY(${-scrollY * (0.1 + Math.random() * 0.2)}px)`
+            }}
+          ></div>
+        ))}
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -219,6 +292,15 @@ export default function Landing() {
         }
         .animation-delay-4000 {
           animation-delay: 4s;
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
         }
       `}</style>
     </div>

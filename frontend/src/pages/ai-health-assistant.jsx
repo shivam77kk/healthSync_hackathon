@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Mic } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/patient-dashboard/Sidebar';
+import AIHealthAssistantPopup from '../components/AIHealthAssistantPopup';
 import api from '../utils/api';
 
 export default function AIHealthAssistant() {
@@ -8,6 +10,7 @@ export default function AIHealthAssistant() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -52,14 +55,23 @@ export default function AIHealthAssistant() {
             <h1 className="text-2xl font-bold text-[#0A3E1D] mb-2">AI Health Assistant</h1>
             <p className="text-gray-600 mb-6">Get instant answers to your health questions and personalized guidance</p>
             
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#0A3E1D] rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">AI</span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#0A3E1D] rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">AI</span>
+                </div>
+                <div>
+                  <div className="font-medium text-[#0A3E1D]">Health Assistant</div>
+                  <div className="text-sm text-green-600">● Online • Available 24/7</div>
+                </div>
               </div>
-              <div>
-                <div className="font-medium text-[#0A3E1D]">Health Assistant</div>
-                <div className="text-sm text-green-600">● Online • Available 24/7</div>
-              </div>
+              <button
+                onClick={() => setShowPopup(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                <Mic className="w-4 h-4" />
+                Voice Assistant
+              </button>
             </div>
 
             <div className="mb-6">
@@ -145,6 +157,11 @@ export default function AIHealthAssistant() {
           </div>
         </div>
       </div>
+      
+      <AIHealthAssistantPopup 
+        isOpen={showPopup} 
+        onClose={() => setShowPopup(false)} 
+      />
     </div>
   );
 }

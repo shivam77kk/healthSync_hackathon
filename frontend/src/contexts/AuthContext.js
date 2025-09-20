@@ -14,6 +14,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userType, setUserType] = useState('patient');
 
   useEffect(() => {
     checkAuthStatus();
@@ -21,31 +22,47 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     const token = localStorage.getItem('token');
+    const storedUserType = localStorage.getItem('userType') || 'patient';
+    const storedUser = localStorage.getItem('user');
+    
+    setUserType(storedUserType);
+    
     if (token) {
       api.setToken(token);
       try {
         await api.verifyAuth();
-        const userProfile = await api.getUserProfile();
-        if (userProfile && userProfile.name !== 'Sam Cha') {
-          setUser(userProfile);
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          // Ensure userType is set correctly
+          if (!localStorage.getItem('userType')) {
+            localStorage.setItem('userType', 'patient');
+          }
+        } else {
+          const userProfile = await api.getUserProfile();
+          if (userProfile && userProfile.user) {
+            setUser(userProfile.user);
+            localStorage.setItem('user', JSON.stringify(userProfile.user));
+          }
         }
       } catch (error) {
         console.error('Auth verification failed:', error);
-        // Don't clear token on network errors, only on actual auth failures
-        if (error.message === 'Unauthorized') {
-          api.clearToken();
-          localStorage.removeItem('token');
-        }
+        api.clearToken();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userType');
       }
     }
     setLoading(false);
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, type = 'patient') => {
     try {
-      const response = await api.login(email, password);
-      if (response.user) {
-        setUser(response.user);
+      const response = await api.login(email, password, type);
+      if (response.user || response.doctor) {
+        const userData = response.user || response.doctor;
+        setUser(userData);
+        setUserType(type);
       }
       return response;
     } catch (error) {
@@ -53,9 +70,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData, type = 'patient') => {
     try {
-      const response = await api.register(userData);
+      const response = await api.register(userData, type);
       return response;
     } catch (error) {
       throw error;
@@ -67,15 +84,24 @@ export const AuthProvider = ({ children }) => {
       await api.logout();
     } finally {
       setUser(null);
+      setUserType('patient');
       api.clearToken();
+      localStorage.removeItem('user');
+      localStorage.removeItem('userType');
     }
+  };
+
+  const googleLogin = (type = 'patient') => {
+    api.googleLogin(type);
   };
 
   const value = {
     user,
+    userType,
     login,
     register,
     logout,
+    googleLogin,
     loading,
     isAuthenticated: !!user
   };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function PatientSignup() {
+export default function DoctorSignup() {
   const router = useRouter();
   const { register, googleLogin } = useAuth();
   const [activeTab, setActiveTab] = useState('signup');
@@ -15,9 +15,8 @@ export default function PatientSignup() {
     lastName: '',
     email: '',
     phone: '',
-    dateOfBirth: '',
-    gender: '',
-    bloodGroup: '',
+    licenseNumber: '',
+    specialization: '',
     password: '',
     confirmPassword: ''
   });
@@ -41,18 +40,18 @@ export default function PatientSignup() {
     }
     
     try {
-      const userData = {
+      const doctorData = {
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
-        age: new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear(),
-        gender: formData.gender || 'Other',
-        bloodGroup: formData.bloodGroup || 'O+'
+        age: 30,
+        experience: formData.licenseNumber,
+        mode: formData.specialization || 'General Practice'
       };
       
-      await register(userData, 'patient');
+      await register(doctorData, 'doctor');
       sessionStorage.setItem('fromLanding', 'true');
-      router.push('/patient-signin');
+      router.push('/doctor-signin');
     } catch (error) {
       setError(error.message || 'Registration failed. Please try again.');
     } finally {
@@ -62,16 +61,16 @@ export default function PatientSignup() {
 
   const handleGoogleSignup = () => {
     sessionStorage.setItem('fromLanding', 'true');
-    googleLogin('patient');
+    googleLogin('doctor');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-800 to-purple-900 relative overflow-hidden">
       {/* Background Animation */}
       <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -79,7 +78,7 @@ export default function PatientSignup() {
         <header className="p-6">
           <button 
             onClick={() => router.push('/landing')}
-            className="flex items-center gap-2 text-emerald-200 hover:text-white transition-colors duration-200"
+            className="flex items-center gap-2 text-purple-200 hover:text-white transition-colors duration-200"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -92,37 +91,32 @@ export default function PatientSignup() {
         <main className="flex-1 flex items-center justify-center px-6">
           <div className="w-full max-w-md">
             {/* Card */}
-            <div className="bg-emerald-800/40 backdrop-blur-sm border border-emerald-600/30 rounded-2xl p-8">
+            <div className="bg-purple-800/40 backdrop-blur-sm border border-purple-600/30 rounded-2xl p-8">
               {/* Icon */}
               <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 bg-emerald-600/30 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div className="w-16 h-16 bg-purple-600/30 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
               </div>
 
               {/* Title */}
               <div className="text-center mb-6">
-                <h1 className="text-2xl font-semibold text-white mb-2">Patient Portal</h1>
-                <p className="text-emerald-200 text-sm">Access your healthcare records and appointments</p>
+                <h1 className="text-2xl font-semibold text-white mb-2">Doctor Portal</h1>
+                <p className="text-purple-200 text-sm">Manage your patients and medical practice</p>
               </div>
 
               {/* Tabs */}
-              <div className="flex bg-emerald-700/30 rounded-lg p-1 mb-6">
+              <div className="flex bg-purple-700/30 rounded-lg p-1 mb-6">
                 <button
-                  onClick={() => router.push('/patient-signin')}
-                  className="flex-1 py-2 px-4 rounded-md text-sm font-medium text-emerald-200 hover:text-white transition-all duration-200"
+                  onClick={() => router.push('/doctor-signin')}
+                  className="flex-1 py-2 px-4 rounded-md text-sm font-medium text-purple-200 hover:text-white transition-all duration-200"
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => setActiveTab('signup')}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                    activeTab === 'signup'
-                      ? 'bg-emerald-600 text-white'
-                      : 'text-emerald-200 hover:text-white'
-                  }`}
+                  className="flex-1 py-2 px-4 rounded-md text-sm font-medium bg-purple-600 text-white"
                 >
                   Sign Up
                 </button>
@@ -139,35 +133,35 @@ export default function PatientSignup() {
                 {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-emerald-200 text-sm font-medium mb-2">First Name</label>
+                    <label className="block text-purple-200 text-sm font-medium mb-2">First Name</label>
                     <input
                       type="text"
                       name="firstName"
                       placeholder="First name"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-emerald-200 text-sm font-medium mb-2">Last Name</label>
+                    <label className="block text-purple-200 text-sm font-medium mb-2">Last Name</label>
                     <input
                       type="text"
                       name="lastName"
                       placeholder="Last name"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-emerald-200 text-sm font-medium mb-2">Email</label>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Email</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                       </svg>
                     </div>
@@ -177,17 +171,17 @@ export default function PatientSignup() {
                       placeholder="Enter your email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-emerald-200 text-sm font-medium mb-2">Phone</label>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Phone</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
@@ -197,75 +191,43 @@ export default function PatientSignup() {
                       placeholder="Phone number"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
 
-                {/* Date of Birth */}
+                {/* Medical License Number */}
                 <div>
-                  <label className="block text-emerald-200 text-sm font-medium mb-2">Date of Birth</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      placeholder="dd/mm/yyyy"
-                      value={formData.dateOfBirth}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Medical License Number</label>
+                  <input
+                    type="text"
+                    name="licenseNumber"
+                    placeholder="License number"
+                    value={formData.licenseNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
                 </div>
 
-                {/* Gender and Blood Group */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-emerald-200 text-sm font-medium mb-2">Gender</label>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    >
-                      <option value="">Select Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-emerald-200 text-sm font-medium mb-2">Blood Group</label>
-                    <select
-                      name="bloodGroup"
-                      value={formData.bloodGroup}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    >
-                      <option value="">Select Blood Group</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                    </select>
-                  </div>
+                {/* Specialization */}
+                <div>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Specialization</label>
+                  <input
+                    type="text"
+                    name="specialization"
+                    placeholder="e.g. Cardiology, Neurology"
+                    value={formData.specialization}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
                 </div>
 
                 {/* Password */}
                 <div>
-                  <label className="block text-emerald-200 text-sm font-medium mb-2">Password</label>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Password</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -275,14 +237,14 @@ export default function PatientSignup() {
                       placeholder="Create password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-12 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showPassword ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
                       </svg>
                     </button>
@@ -291,10 +253,10 @@ export default function PatientSignup() {
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-emerald-200 text-sm font-medium mb-2">Confirm Password</label>
+                  <label className="block text-purple-200 text-sm font-medium mb-2">Confirm Password</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -304,14 +266,14 @@ export default function PatientSignup() {
                       placeholder="Confirm password"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-12 py-3 bg-emerald-700/30 border border-emerald-600/30 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 bg-purple-700/30 border border-purple-600/30 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showConfirmPassword ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
                       </svg>
                     </button>
@@ -322,9 +284,9 @@ export default function PatientSignup() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 mt-6"
+                  className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 mt-6"
                 >
-                  {loading ? 'Creating Account...' : 'Create Patient Account'}
+                  {loading ? 'Creating Account...' : 'Create Doctor Account'}
                 </button>
 
                 {/* Google Sign Up */}
@@ -344,10 +306,10 @@ export default function PatientSignup() {
 
                 {/* Privacy Notice */}
                 <div className="flex items-center gap-2 mt-4">
-                  <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  <p className="text-emerald-200 text-xs">Your data is encrypted and HIPAA compliant</p>
+                  <p className="text-purple-200 text-xs">Your data is encrypted and HIPAA compliant</p>
                 </div>
               </form>
             </div>
@@ -356,7 +318,7 @@ export default function PatientSignup() {
 
         {/* Footer */}
         <footer className="p-6">
-          <div className="flex justify-center space-x-8 text-emerald-200 text-xs">
+          <div className="flex justify-center space-x-8 text-purple-200 text-xs">
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

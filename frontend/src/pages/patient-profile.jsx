@@ -18,9 +18,17 @@ export default function PatientProfile() {
   const fetchProfile = async () => {
     try {
       const profileData = await api.getUserProfile();
-      setProfile(profileData);
+      setProfile(profileData?.user || profileData);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Use fallback data if API fails
+      setProfile({
+        name: user?.name || 'Sam Cha',
+        email: user?.email || 'sam.cha@email.com',
+        age: user?.age || 34,
+        gender: user?.gender || 'Male',
+        bloodGroup: user?.bloodGroup || 'O+'
+      });
     } finally {
       setLoading(false);
     }

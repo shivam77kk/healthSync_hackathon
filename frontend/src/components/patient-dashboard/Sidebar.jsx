@@ -1,4 +1,4 @@
-import { Home, Calendar, FileText, Clock, MessageSquare, CreditCard, Settings, Shield, PlayCircle } from 'lucide-react';
+import { Home, Calendar, FileText, Clock, MessageSquare, CreditCard, Settings, Shield, PlayCircle, Mic } from 'lucide-react';
 import { HeartHandshake } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -21,6 +21,12 @@ export default function Sidebar() {
       setActiveItem('play');
     } else if (router.pathname === '/ai-health-assistant') {
       setActiveItem('message');
+    } else if (router.pathname === '/voice-prescription') {
+      setActiveItem('mic');
+    } else if (router.pathname === '/report-viewer') {
+      setActiveItem('file-report');
+    } else if (router.pathname === '/voice-notes') {
+      setActiveItem('voice-notes');
     } else if (router.pathname === '/') {
       setActiveItem('home');
     }
@@ -40,6 +46,12 @@ export default function Sidebar() {
       router.push('/health-assessment');
     } else if (itemId === 'message') {
       router.push('/ai-health-assistant');
+    } else if (itemId === 'mic') {
+      router.push('/voice-prescription');
+    } else if (itemId === 'file-report') {
+      router.push('/report-viewer');
+    } else if (itemId === 'voice-notes') {
+      router.push('/voice-notes');
     } else if (itemId === 'home') {
       router.push('/');
     }
@@ -48,12 +60,12 @@ export default function Sidebar() {
   const menuItems = [
     { id: 'home', icon: Home },
     { id: 'calendar', icon: Calendar },
-    { id: 'file', icon: FileText },
+    { id: 'file-report', icon: FileText },
     { id: 'clock', icon: Clock },
     { id: 'heart', icon: HeartHandshake },
     { id: 'play', icon: PlayCircle },
     { id: 'message', icon: MessageSquare },
-    { id: 'card', icon: FileText },
+    { id: 'voice-notes', icon: Mic },
     { id: 'settings', icon: Settings }
   ];
 

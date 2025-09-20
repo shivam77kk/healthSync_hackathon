@@ -186,6 +186,36 @@ export default function Appointments() {
         </div>
 
         <div className="grid grid-cols-2 gap-6">
+          {/* My Appointments Section */}
+          {appointments.length > 0 && (
+            <div className="col-span-2 mb-6">
+              <h2 className="text-xl font-semibold text-[#2d5016] mb-4">My Appointments</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {appointments.map((appointment, index) => (
+                  <div key={appointment._id || index} className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{appointment.doctorId?.name || 'Dr. Unknown'}</h3>
+                        <p className="text-sm text-gray-600">{new Date(appointment.date).toLocaleDateString()}</p>
+                        <p className="text-sm text-gray-500">{appointment.reason}</p>
+                        <p className="text-xs text-gray-400">{appointment.time}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-3 py-1 rounded-full text-sm ${
+                          appointment.status === 'booked' ? 'bg-blue-100 text-blue-800' :
+                          appointment.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {appointment.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Left Column */}
           <div className="space-y-6">
             {/* Popular Specialties */}
