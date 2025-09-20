@@ -14,7 +14,7 @@ export default function DoctorDashboard() {
         <h1 className="text-3xl font-bold text-gray-800 mb-4">Doctor Dashboard</h1>
         <p className="text-gray-600 mb-8">Coming Soon! The doctor portal is under development.</p>
         <button 
-          onClick={() => router.push('/landing')}
+          onClick={() => router.push('/')}
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2 mx-auto"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

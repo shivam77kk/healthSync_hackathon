@@ -23,6 +23,7 @@ export default function Dashboard() {
       return;
     }
   }, [router]);
+
   const { user, loading: authLoading } = useAuth();
   const [healthData, setHealthData] = useState({
     healthScore: 92,
