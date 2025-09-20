@@ -58,18 +58,22 @@ import aiTriageRoutes from './Routers/AiTriageRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
-mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 15000,
-    connectTimeoutMS: 15000,
-    socketTimeoutMS: 15000
-})
-    .then(() => {
+const connectWithRetry = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 15000,
+            connectTimeoutMS: 15000,
+            socketTimeoutMS: 15000
+        });
         console.log('MongoDB connected successfully');
-    })
-    .catch((err) => {
+    } catch (err) {
         console.error('MongoDB connection error:', err.message);
-        process.exit(1);
-    });
+        console.log('Retrying MongoDB connection in 10 seconds...');
+        setTimeout(connectWithRetry, 10000);
+    }
+};
+
+connectWithRetry();
 
 initializeGoogleStrategy();
 
