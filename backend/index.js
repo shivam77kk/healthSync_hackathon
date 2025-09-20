@@ -55,6 +55,7 @@ import chatRoutes from './Routers/ChatRoutes.js';
 import videoCallRoutes from './Routers/VideoCallRoutes.js';
 import symptomAssessmentRoutes from './Routers/SymptomAssessmentRoutes.js';
 import aiTriageRoutes from './Routers/AiTriageRoutes.js';
+import healthAssessmentRoutes from './Routers/HealthAssessmentRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
@@ -114,6 +115,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/video-call', videoCallRoutes);
 app.use('/api/symptom-assessment', symptomAssessmentRoutes);
 app.use('/api/triage', aiTriageRoutes);
+app.use('/api/health-assessment', healthAssessmentRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');

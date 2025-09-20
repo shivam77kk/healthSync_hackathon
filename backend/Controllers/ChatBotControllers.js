@@ -7,11 +7,20 @@ export const getChatbotResponse = async (req, res) => {
             return res.status(400).json({ message: "Message is required" });
         }
 
+        const apiKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
+        if (!apiKey) {
+            // Graceful fallback if no API key configured
+            return res.status(200).json({
+                message: "AI service not configured. Responding in fallback mode.",
+                response: "I'm here to help with your health questions! While AI is not fully configured, you can ask me about general wellness, symptoms, medications, diet, exercise, sleep, or stress management. For serious concerns, please consult a healthcare professional."
+            });
+        }
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
                 model: "gpt-3.5-turbo",
@@ -31,19 +40,25 @@ export const getChatbotResponse = async (req, res) => {
         });
 
         if (!response.ok) {
-            throw new Error(`OpenAI API error: ${response.statusText}`);
+            // Graceful fallback on API error
+            return res.status(200).json({ 
+                message: "AI service temporarily unavailable. Responding in fallback mode.",
+                response: "I'm here to help with your health questions! Please try again later. If this is urgent, contact a healthcare professional immediately."
+            });
         }
 
         const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content || "I'm here to help with your health questions!";
         res.status(200).json({
             message: "Response generated successfully",
-            response: data.choices[0].message.content
+            response: content
         });
     } catch (error) {
         console.error("Chatbot error:", error);
-        res.status(500).json({ 
-            message: "I'm here to help with your health questions!",
-            response: "I'm here to help with your health questions! Ask me about symptoms, medications, diet, exercise, sleep, or stress management."
+        // Graceful fallback on unexpected errors
+        res.status(200).json({ 
+            message: "AI service error. Responding in fallback mode.",
+            response: "I'm here to help with your health questions! Ask me about symptoms, medications, diet, exercise, sleep, or stress management. For serious or worsening symptoms, seek professional medical help." 
         });
     }
 };
