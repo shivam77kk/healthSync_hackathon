@@ -18,6 +18,18 @@ if (!process.env.SESSION_SECRET) {
     process.exit(1);
 }
 
+// Verify Twilio environment variables for video calling
+if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_API_KEY || !process.env.TWILIO_API_SECRET) {
+    console.warn('Warning: Twilio environment variables are not fully configured. Video calling features may not work properly.');
+    console.warn('Required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_API_KEY, TWILIO_API_SECRET');
+}
+
+// Verify Gemini API key for symptom assessment
+if (!process.env.GEMINI_API_KEY) {
+    console.warn('Warning: GEMINI_API_KEY is not configured. Symptom assessment features may not work properly.');
+    console.warn('Required: GEMINI_API_KEY for AI-powered symptom analysis and medicine suggestions');
+}
+
 // Import dependencies after dotenv configuration
 import express from 'express';
 import mongoose from 'mongoose';
@@ -40,6 +52,9 @@ import googleAuthRoutes from './Routers/GoogleAuthRoutes.js';
 import voicePrescriptionRoutes from './Routers/VoicePrescriptionRoutes.js';
 import cautiooRoutes from './Routers/CautiooRoutes.js';
 import chatRoutes from './Routers/ChatRoutes.js';
+import videoCallRoutes from './Routers/VideoCallRoutes.js';
+import symptomAssessmentRoutes from './Routers/SymptomAssessmentRoutes.js';
+import aiTriageRoutes from './Routers/AiTriageRoutes.js';
 import { initializeGoogleStrategy } from './Controllers/GoogleAuthControllers.js';
 import './config/cloudinary.config.js';
 
@@ -92,6 +107,9 @@ app.use('/api/predictive-score', riskScoreRoutes);
 app.use('/api/voice-prescription', voicePrescriptionRoutes);
 app.use('/api/cautioo', cautiooRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/video-call', videoCallRoutes);
+app.use('/api/symptom-assessment', symptomAssessmentRoutes);
+app.use('/api/triage', aiTriageRoutes);
 
 app.get('/', (req, res) => {
     res.send('HealthCare API is running...');
