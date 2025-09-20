@@ -26,9 +26,12 @@ export default function PatientSignin() {
     setError('');
     
     try {
-      await login(formData.email, formData.password, 'patient');
-      sessionStorage.setItem('fromLanding', 'true');
-      router.push('/');
+      const response = await login(formData.email, formData.password, 'patient');
+      if (response && (response.accessToken || response.user)) {
+        sessionStorage.setItem('fromLanding', 'true');
+        localStorage.setItem('userType', 'patient');
+        router.push('/patient-dashboard');
+      }
     } catch (error) {
       setError(error.message || 'Login failed. Please try again.');
     } finally {
@@ -95,6 +98,28 @@ export default function PatientSignin() {
                   {error}
                 </div>
               )}
+
+              {/* Demo Login Button */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem('fromLanding', 'true');
+                    localStorage.setItem('userType', 'patient');
+                    localStorage.setItem('user', JSON.stringify({ name: 'Demo Patient', email: 'patient@demo.com' }));
+                    router.push('/patient-dashboard');
+                  }}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200"
+                >
+                  🚀 Demo Login (Patient)
+                </button>
+              </div>
+
+              <div className="flex items-center my-4">
+                <div className="flex-1 border-t border-emerald-600/30"></div>
+                <span className="px-4 text-emerald-300 text-sm">or login with credentials</span>
+                <div className="flex-1 border-t border-emerald-600/30"></div>
+              </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>

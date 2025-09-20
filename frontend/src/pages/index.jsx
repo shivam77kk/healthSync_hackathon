@@ -12,111 +12,22 @@ import AIAssistant from '../components/patient-dashboard/AIAssistant';
 import TodaysMedications from '../components/patient-dashboard/TodaysMedications';
 import api from '../utils/api';
 
-export default function Dashboard() {
+export default function PatientDashboard() {
   const router = useRouter();
-  const { userType } = useAuth();
+  const { user } = useAuth();
   
-  // Check if user came from landing page, if not redirect to landing
+  // Always redirect to landing page first
   useEffect(() => {
-    const fromLanding = sessionStorage.getItem('fromLanding');
-    if (!fromLanding) {
-      router.push('/landing');
-      return;
-    }
+    router.push('/landing');
   }, [router]);
 
-  // Redirect doctors to their dashboard
-  useEffect(() => {
-    const storedUserType = localStorage.getItem('userType');
-    if (storedUserType === 'doctor' && router.pathname === '/') {
-      router.push('/doctor-dashboard');
-    }
-  }, [router]);
-
-  const { user, loading: authLoading } = useAuth();
-  const [healthData, setHealthData] = useState({
-    healthScore: 92,
-    activeMeds: 3,
-    appointments: 2,
-    waterIntake: 75,
-    steps: 65,
-    sleep: 85
-  });
-  const [appointments, setAppointments] = useState([]);
-  const [reminders, setReminders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!authLoading) {
-      fetchDashboardData();
-    }
-  }, [authLoading, user]);
-
-  const fetchDashboardData = async () => {
-    try {
-      // Allow demo mode - don't require authentication for dashboard view
-      
-      const [appointmentsRes, remindersRes, healthRes] = await Promise.allSettled([
-        api.getAppointments(),
-        api.getReminders(),
-        api.getHealthLogs()
-      ]);
-      
-      const appointments = appointmentsRes.status === 'fulfilled' ? appointmentsRes.value?.appointments || [] : [];
-      const reminders = remindersRes.status === 'fulfilled' ? remindersRes.value?.reminders || [] : [];
-      
-      setAppointments(appointments);
-      setReminders(reminders);
-      
-      setHealthData(prev => ({
-        ...prev,
-        appointments: appointments.length,
-        activeMeds: reminders.length
-      }));
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (authLoading || loading) {
-    return (
-      <div className="flex min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
-      </div>
-    );
-  }
 
   return (
-    <ProtectedRoute requireAuth={false}>
-      <div className="flex min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 p-6">
-            <div className="max-w-7xl mx-auto">
-              <WelcomeSection />
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                {/* Left Column */}
-                <div className="lg:col-span-2 space-y-6">
-                  <HealthGoals healthData={healthData} />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <NextAppointment />
-                    <AIAssistant />
-                  </div>
-                </div>
-                
-                {/* Right Column */}
-                <div className="space-y-6">
-                  <StatsCards healthData={healthData} />
-                  <TodaysMedications />
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-emerald-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white text-lg">Redirecting to landing page...</p>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }

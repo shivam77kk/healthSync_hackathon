@@ -30,7 +30,7 @@ export default function DoctorSignin() {
       if (response && (response.accessToken || response.doctor)) {
         sessionStorage.setItem('fromLanding', 'true');
         localStorage.setItem('userType', 'doctor');
-        router.replace('/doctor-dashboard');
+        router.push('/doctor-dashboard');
       }
     } catch (error) {
       setError(error.message || 'Login failed. Please try again.');
@@ -98,6 +98,28 @@ export default function DoctorSignin() {
                   {error}
                 </div>
               )}
+
+              {/* Demo Login Button */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem('fromLanding', 'true');
+                    localStorage.setItem('userType', 'doctor');
+                    localStorage.setItem('user', JSON.stringify({ name: 'Dr. Sam Cha', email: 'doctor@demo.com' }));
+                    router.push('/doctor-dashboard');
+                  }}
+                  className="w-full bg-purple-500 hover:bg-purple-400 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200"
+                >
+                  🚀 Demo Login (Doctor)
+                </button>
+              </div>
+
+              <div className="flex items-center my-4">
+                <div className="flex-1 border-t border-purple-600/30"></div>
+                <span className="px-4 text-purple-300 text-sm">or login with credentials</span>
+                <div className="flex-1 border-t border-purple-600/30"></div>
+              </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>

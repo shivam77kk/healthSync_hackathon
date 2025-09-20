@@ -1,32 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Search, Home, Calendar, Users, FileText, Clock, Mic, Settings, AlertTriangle } from 'lucide-react';
+import { Search, Home, Calendar, Users, FileText, Clock, Mic, Settings, AlertTriangle, LogOut } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 
 export default function DoctorDashboard() {
   const router = useRouter();
-  const { user, userType } = useAuth();
+  const { user, userType, logout } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Check if user is authenticated and is a doctor
+    // Check if user came from landing page and is a doctor
+    const fromLanding = sessionStorage.getItem('fromLanding');
     const storedUserType = localStorage.getItem('userType');
-    const token = localStorage.getItem('token');
     
-    if (!token) {
-      router.push('/doctor-signin');
+    if (!fromLanding) {
+      router.push('/landing');
       return;
     }
     
-    if (storedUserType && storedUserType !== 'doctor') {
-      router.push('/');
+    if (storedUserType === 'patient') {
+      router.push('/patient-dashboard');
       return;
     }
     
     fetchDashboardData();
-  }, []);
+  }, [router]);
 
   const fetchDashboardData = async () => {
     try {
@@ -94,9 +94,30 @@ export default function DoctorDashboard() {
           </button>
         </div>
         
-        <div className="mt-auto">
+        <div className="mt-auto space-y-4">
           <button className="p-3 text-white hover:bg-blue-500 rounded-xl transition-all duration-300 hover:scale-110">
             <Settings className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={async () => {
+              try {
+                await logout();
+                sessionStorage.removeItem('fromLanding');
+                router.push('/landing');
+              } catch (error) {
+                console.error('Logout error:', error);
+                // Force logout even if API call fails
+                sessionStorage.removeItem('fromLanding');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('userType');
+                router.push('/landing');
+              }
+            }}
+            className="p-3 text-white hover:bg-red-500 bg-red-600 rounded-xl transition-all duration-300 hover:scale-110"
+            title="Logout"
+          >
+            <LogOut className="w-6 h-6" />
           </button>
         </div>
       </div>

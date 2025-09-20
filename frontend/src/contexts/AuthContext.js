@@ -63,6 +63,8 @@ export const AuthProvider = ({ children }) => {
         const userData = response.user || response.doctor;
         setUser(userData);
         setUserType(type);
+        localStorage.setItem('userType', type);
+        localStorage.setItem('user', JSON.stringify(userData));
       }
       return response;
     } catch (error) {

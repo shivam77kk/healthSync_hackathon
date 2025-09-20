@@ -26,11 +26,11 @@ export default function Landing() {
   }, []);
 
   const handlePatientClick = () => {
-    router.push('/patient-signup');
+    router.push('/patient-signin');
   };
 
   const handleDoctorClick = () => {
-    router.push('/doctor-signup');
+    router.push('/doctor-signin');
   };
 
   return (

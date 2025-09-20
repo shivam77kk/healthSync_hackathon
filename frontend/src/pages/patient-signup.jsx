@@ -50,9 +50,12 @@ export default function PatientSignup() {
         bloodGroup: formData.bloodGroup || 'O+'
       };
       
-      await register(userData, 'patient');
-      sessionStorage.setItem('fromLanding', 'true');
-      router.push('/patient-signin');
+      const response = await register(userData, 'patient');
+      if (response) {
+        alert('Registration successful! Please login with your credentials.');
+        sessionStorage.setItem('fromLanding', 'true');
+        router.push('/patient-signin');
+      }
     } catch (error) {
       setError(error.message || 'Registration failed. Please try again.');
     } finally {

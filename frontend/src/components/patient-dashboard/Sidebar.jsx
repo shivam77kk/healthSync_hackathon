@@ -1,10 +1,12 @@
-import { Home, Calendar, FileText, Clock, MessageSquare, CreditCard, Settings, Shield, PlayCircle, Mic } from 'lucide-react';
+import { Home, Calendar, FileText, Clock, MessageSquare, CreditCard, Settings, Shield, PlayCircle, Mic, LogOut } from 'lucide-react';
 import { HeartHandshake } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Sidebar() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [activeItem, setActiveItem] = useState('home');
 
   // Set active item based on current route
@@ -53,7 +55,25 @@ export default function Sidebar() {
     } else if (itemId === 'voice-notes') {
       router.push('/voice-notes');
     } else if (itemId === 'home') {
-      router.push('/');
+      router.push('/patient-dashboard');
+    } else if (itemId === 'logout') {
+      handleLogout();
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      sessionStorage.removeItem('fromLanding');
+      router.push('/landing');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if API call fails
+      sessionStorage.removeItem('fromLanding');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userType');
+      router.push('/landing');
     }
   };
 
@@ -101,6 +121,17 @@ export default function Sidebar() {
           ))}
         </div>
       </nav>
+      
+      {/* Logout Button */}
+      <div className="px-2 pb-4">
+        <button
+          onClick={() => handleNavigation('logout')}
+          className="w-full h-12 flex items-center justify-center rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-red-600 bg-red-500"
+          title="Logout"
+        >
+          <LogOut className="w-5 h-5 text-white transition-all duration-300 hover:scale-125" />
+        </button>
+      </div>
     </div>
   );
 }
